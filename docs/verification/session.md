@@ -64,8 +64,11 @@ open proto/vertical-test.html    # まず Chrome（第一対象）
 
 **何を・なぜ**: 「どこまでも長い 1 ページ」PDF（絵巻物）の実現性確認。`print-test.html` に「長尺」ボタン追加（Task 0.3）が前提。
 
-- [ ] 「長尺」ボタンを print-test.html に追加（`.tategaki` 実測 → カスタム `@page size` → `window.print()`）
-- [ ] A9〜A11: 改ページなし1ページ・文字選択可・ページ寸法上限の挙動
+- [x] 「長尺」ボタンを print-test.html に追加（`.tategaki` 実測 → カスタム `@page size` → `window.print()` → `afterprint` 復帰。実装済み）
+- [ ] A9 改ページなしで横長 1 ページに収まる（Chrome）
+- [ ] A10 PDF 保存後に文字が**選択可能**
+- [ ] A11 超長文（現状の 3〜5 倍）でページ寸法上限（Chrome 約 14,400px ≒ 200in）に達した時の挙動を記録
+- [ ] afterprint 後に A5/B6 ボタンが正常復帰する
 
 ## ⏳ ステージ5: 結果反映
 

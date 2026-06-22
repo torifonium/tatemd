@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>印刷検証プロトタイプ — tatemd Wave 0 / Task 0.1</title>
+  <title>印刷検証プロトタイプ — tatemd Wave 0 / Task 0.3</title>
 
   <!-- 動的に差し替えられる @page スタイル -->
   <style id="print-page">
@@ -62,6 +62,28 @@
       font-size: 0.875rem;
     }
     .print-btn:hover { background: #778; }
+
+    /* 長尺（縦巻）ボタン */
+    .scroll-btn {
+      padding: 4px 14px;
+      border: 1px solid #7a9a7a;
+      background: #3a5c3a;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 0.875rem;
+    }
+    .scroll-btn:hover { background: #4a7a4a; }
+    .scroll-btn:disabled { background: #555; color: #999; cursor: default; border-color: #666; }
+
+    /* 長尺モード中の寸法表示 */
+    .scroll-info {
+      font-size: 0.75rem;
+      color: #aaa;
+      align-self: center;
+      display: none;
+    }
+    .scroll-info.visible { display: inline; }
 
     /* 2ペインメイン */
     .app-main {
@@ -166,13 +188,26 @@
       }
 
       /* Safari フォールバック: @page { size } が無視された場合に本文ボックスを実寸固定 */
-      body[data-paper="a5"] .tategaki {
+      /* モード① ページ分割時のみ適用（モード② 長尺は JS が inline style で上書き） */
+      body[data-paper="a5"]:not([data-pdf-mode="scroll"]) .tategaki {
         block-size: 210mm;   /* 縦書き: block 方向 = 紙の長辺 */
         inline-size: 148mm;  /* 縦書き: inline 方向 = 紙の短辺 */
       }
-      body[data-paper="b6"] .tategaki {
+      body[data-paper="b6"]:not([data-pdf-mode="scroll"]) .tategaki {
         block-size: 182mm;
         inline-size: 128mm;
+      }
+
+      /* モード② 長尺: 改ページを強制抑止 */
+      body[data-pdf-mode="scroll"] .tategaki {
+        break-inside: avoid;
+        page-break-inside: avoid; /* Firefox 旧形式 */
+        overflow: visible;
+        /* 寸法は JS が inline style で設定 */
+      }
+      body[data-pdf-mode="scroll"] .tategaki p {
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
     }
   </style>
@@ -181,11 +216,14 @@
 
   <!-- ヘッダ（印刷時は非表示） -->
   <header class="app-header">
-    <h1>tatemd — 印刷検証 Wave 0 / Task 0.1</h1>
-    <span style="font-size:0.8rem; color:#aaa;">用紙:</span>
+    <h1>tatemd — 印刷検証 Wave 0 / Task 0.3</h1>
+    <span style="font-size:0.8rem; color:#aaa;">用紙（モード①）:</span>
     <button class="paper-btn active" id="btn-a5" onclick="setPaper('a5')">A5</button>
     <button class="paper-btn"        id="btn-b6" onclick="setPaper('b6')">B6</button>
-    <button class="print-btn" onclick="window.print()">印刷プレビュー</button>
+    <button class="print-btn" onclick="printPaged()">印刷（ページ分割）</button>
+    <span style="font-size:0.8rem; color:#888; margin-left:8px;">|</span>
+    <button class="scroll-btn" id="btn-scroll" onclick="printScroll()">長尺（縦巻）</button>
+    <span class="scroll-info" id="scroll-info"></span>
   </header>
 
   <!-- メイン: 2ペイン（Grid） -->
@@ -244,17 +282,49 @@
 
   <!-- 検証チェックリスト（印刷時は非表示） -->
   <details class="checklist" open>
-    <summary>検証手順（Task 0.1）</summary>
+    <summary>検証手順（Task 0.3 — モード② 長尺・縦巻）</summary>
     <ol>
-      <li><strong>用紙サイズ切替</strong>: A5 / B6 ボタンを押し「印刷プレビュー」→ PDF 保存。用紙が A5 / B6 に変わるか確認。</li>
-      <li><strong>本文のみ出力</strong>: 印刷プレビューでヘッダ・エディタが消え、縦書き本文のみが現れるか。</li>
-      <li><strong>複数ページ送り</strong>: 縦書き本文が 2 ページ目以降へ正しく流れるか（最大の地雷）。</li>
-      <li><strong>Safari フォールバック</strong>: Safari で <code>@page size</code> が無視された場合に実寸固定（A5=148×210mm / B6=128×182mm）で本らしい体裁になるか。</li>
-      <li><strong>3 ブラウザ</strong>: Chrome / Safari / Firefox で各ステップを繰り返す。</li>
+      <li>
+        <strong>【モード① 確認】</strong>
+        A5 / B6 ボタンを選び「印刷（ページ分割）」→ 印刷プレビューで用紙サイズが変わり、
+        本文が複数ページに流れるか確認（Task 0.1 継続）。
+      </li>
+      <li>
+        <strong>【モード② 基本】長尺ボタンを押す</strong>:
+        印刷プレビューで <em>改ページなし・1 ページ</em> に全文が収まるか確認。
+        ページ左上に表示される寸法（幅 × 高 px）を記録する。
+      </li>
+      <li>
+        <strong>【モード② PDF 保存後の文字選択】</strong>:
+        「PDF に保存」で保存したファイルをビューアで開き、文字をドラッグ選択できるか確認
+        （ラスタライズされていないかのチェック）。
+      </li>
+      <li>
+        <strong>【モード② ページ寸法上限の検証】</strong>:
+        エディタに超長文を貼り付け（目安: 現在の 3〜5 倍）、再び長尺ボタンを押す。
+        Chrome のページ最大寸法上限（実装上限: 約 200 インチ ≒ 14,400px 付近）に達したとき
+        「1 ページに収まらず分割される」「出力が欠ける」等の挙動が起きるか記録する。
+      </li>
+      <li>
+        <strong>【ブラウザ差】</strong>（ベストエフォート）:
+        Safari では <code>@page { size }</code> を無視する場合がある。
+        印刷ダイアログで「用紙サイズ: カスタム」が選択できるか確認。
+        Firefox は <code>break-inside: avoid</code> の効きが Chrome と異なることがある。
+      </li>
+      <li>
+        <strong>【復帰確認】</strong>:
+        長尺印刷後にモード①（A5/B6）ボタンが正常に機能するか確認
+        （<code>afterprint</code> で <code>@page</code> が元に戻っているか）。
+      </li>
     </ol>
+    <p style="margin-top:8px; font-size:0.75rem; color:#888;">
+      ※ 第一対象は Chrome。Safari / Firefox は挙動差を記録する（合否ゲートではない）。
+    </p>
   </details>
 
   <script>
+    // ===== モード① ページ分割 =====
+
     // 用紙サイズ切替: body[data-paper] 属性と <style id="print-page"> の @page を差し替える
     function setPaper(size) {
       document.body.dataset.paper = size;
@@ -266,17 +336,123 @@
       document.getElementById('btn-b6').setAttribute('aria-pressed', size === 'b6');
 
       // @page { size } を差し替え
-      const styleMap = {
-        a5: 'A5',
-        b6: 'B6',
-      };
+      const styleMap = { a5: 'A5', b6: 'B6' };
+      setPrintPageStyle(`@page { size: ${styleMap[size]}; margin: 15mm; }`);
+    }
+
+    // モード① 印刷実行
+    function printPaged() {
+      // 長尺モードではなく通常用紙でのページ分割
+      document.body.removeAttribute('data-pdf-mode');
+      const tategaki = document.getElementById('tategaki-content');
+      tategaki.style.removeProperty('width');
+      tategaki.style.removeProperty('height');
+      // 現在の用紙サイズで @page を確定してから印刷
+      const paper = document.body.dataset.paper || 'a5';
+      const styleMap = { a5: 'A5', b6: 'B6' };
+      setPrintPageStyle(`@page { size: ${styleMap[paper]}; margin: 15mm; }`);
+      window.print();
+    }
+
+    // ===== モード② 長尺一枚（縦巻） =====
+
+    // 長尺モード定数
+    const SCROLL_MARGIN_PX = 20; // 左右（縦書きでは上下）の余白 px（印刷ダイアログでも余白指定するので小さめ）
+
+    function printScroll() {
+      const btn = document.getElementById('btn-scroll');
+      const info = document.getElementById('scroll-info');
+
+      // --- 手順 1: .tategaki の実測 ---
+      // 縦書き (vertical-rl) では:
+      //   scrollWidth  = 列が増える方向（右→左）の総延長 ≒ ページ幅（印刷物の横寸法）
+      //   scrollHeight = 1 列の高さ                        ≒ ページ高（印刷物の縦寸法）
+      // 画面上では .tategaki に overflow-x:auto が付いているため
+      // scrollWidth が実際のコンテンツ幅を返す。
+      const tategaki = document.getElementById('tategaki-content');
+
+      // 画面上の overflow を一時的に解除して正確な scrollWidth を得る
+      const prevOverflowX = tategaki.style.overflowX;
+      const prevOverflowY = tategaki.style.overflowY;
+      tategaki.style.overflowX = 'visible';
+      tategaki.style.overflowY = 'visible';
+
+      // レイアウト強制再計算
+      // eslint-disable-next-line no-unused-expressions
+      tategaki.offsetWidth;
+
+      const contentW = tategaki.scrollWidth;  // 列の総延長（横幅）
+      const contentH = tategaki.scrollHeight; // 列の高さ（縦高）
+
+      // overflow を元に戻す
+      tategaki.style.overflowX = prevOverflowX;
+      tategaki.style.overflowY = prevOverflowY;
+
+      // ページ寸法 = コンテンツ寸法 + 余白
+      const pageW = contentW + SCROLL_MARGIN_PX * 2; // px
+      const pageH = contentH + SCROLL_MARGIN_PX * 2; // px
+
+      // 寸法を画面に表示（デバッグ用）
+      info.textContent = `実測: ${contentW}×${contentH}px → @page ${pageW}×${pageH}px`;
+      info.classList.add('visible');
+
+      // --- 手順 2: @page を長尺サイズに差し替え + 印刷モード属性を設定 ---
+      // body[data-pdf-mode="scroll"] を付与 → CSS の break-inside:avoid が有効になる
+      document.body.dataset.pdfMode = 'scroll';
+
+      // .tategaki の印刷時サイズを inline style で指定
+      // （縦書きなので width=列総延長, height=列高 をそのまま設定）
+      tategaki.style.width  = contentW + 'px';
+      tategaki.style.height = contentH + 'px';
+
+      setPrintPageStyle(
+        `@page { size: ${pageW}px ${pageH}px; margin: ${SCROLL_MARGIN_PX}px; }`
+      );
+
+      // --- 手順 3: 印刷 ---
+      btn.disabled = true;
+      window.print();
+
+      // --- 手順 4: afterprint で元に戻す ---
+      // afterprint は非同期なので addEventListener で1回だけ受け取る
+      function onAfterPrint() {
+        window.removeEventListener('afterprint', onAfterPrint);
+        restoreFromScroll();
+        btn.disabled = false;
+      }
+      window.addEventListener('afterprint', onAfterPrint);
+
+      // afterprint が発火しないブラウザ（旧 Safari 等）への保険: 3 秒後に自動復帰
+      setTimeout(function() {
+        if (document.body.dataset.pdfMode === 'scroll') {
+          window.removeEventListener('afterprint', onAfterPrint);
+          restoreFromScroll();
+          btn.disabled = false;
+        }
+      }, 3000);
+    }
+
+    // 長尺モードから元の用紙サイズ（モード①）へ復帰
+    function restoreFromScroll() {
+      document.body.removeAttribute('data-pdf-mode');
+      const tategaki = document.getElementById('tategaki-content');
+      tategaki.style.removeProperty('width');
+      tategaki.style.removeProperty('height');
+      // 現在選択されている用紙サイズで @page を復元
+      const paper = document.body.dataset.paper || 'a5';
+      const styleMap = { a5: 'A5', b6: 'B6' };
+      setPrintPageStyle(`@page { size: ${styleMap[paper]}; margin: 15mm; }`);
+    }
+
+    // ===== 共通: <style id="print-page"> の中身を差し替える =====
+    function setPrintPageStyle(css) {
       let el = document.getElementById('print-page');
       if (!el) {
         el = document.createElement('style');
         el.id = 'print-page';
         document.head.appendChild(el);
       }
-      el.textContent = `@page { size: ${styleMap[size]}; margin: 15mm; }`;
+      el.textContent = css;
     }
 
     // 初期状態を確定
