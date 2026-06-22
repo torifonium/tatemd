@@ -20,6 +20,12 @@
   - Done when: `.tategaki p { text-indent }` の要否、justify の実効、英数字の許容可否を design に反映。崩れる項目は要件緩和 or ROADMAP 送りを判断。
   - Depends on: none
 
+- [ ] **Task 0.3**: 長尺一枚 PDF プロトタイプ（モード②のカスタム @page・FR-008）
+  - What: `.tategaki` 実測値で `@page { size: <幅>px <高>px }` を設定 → `window.print()` し、3 ブラウザで (a) 改ページされず 1 ページに収まるか (b) 文字が選択可能か (c) どの長さでページ寸法上限に達するか（超過時の挙動）を確認。`proto/print-test.html` に「長尺」ボタンを足す形でよい。
+  - Files: `proto/print-test.html`（拡張）
+  - Done when: 上限・既定余白・列高・超過時フォールバック方針を design「PDF エクスポート」節へ反映。
+  - Depends on: none
+
 ### Wave 1（並列 — 依存なし）
 
 - [ ] **Task 1.1**: プロジェクト雛形（Vite + TS）
@@ -104,6 +110,12 @@
   - Done when: 印刷プレビューで本文のみ・A5/B6 反映・縦書き維持・複数ページ送りが Chrome/Safari/Firefox で確認できる。
   - Depends on: Task 3.1, Task 0.1
 
+- [ ] **Task 3.3**: PDF エクスポート（2モード・FR-008 / US-007）
+  - What: `adapter/pdfExport.ts` を実装。`exportPdf(mode, paper)` で、モード①は `@page{size:A5/B6}` のまま `window.print()`、モード②は `.tategaki` を実測して `@page{size:幅×高}`＋改ページ抑止に差し替えて `window.print()`、`afterprint` で復帰。ヘッダに「長尺（縦巻）」選択を追加し（index.html / app.css）、`PDF/印刷` ボタンと結線。文字はラスタライズしない。
+  - Files: `src/adapter/pdfExport.ts`, `src/adapter/app.ts`, `index.html`, `src/styles/app.css`, `src/styles/print.css`
+  - Done when: ①A5/B6 のページ分割 PDF、②改ページなしの長尺1ページ PDF が出力でき、いずれも本文のみ・文字選択可（3 ブラウザ確認）。超過時フォールバックは Task 0.3 の結論に従う。
+  - Depends on: Task 3.1, Task 3.2, Task 0.3
+
 ### Wave 4（仕上げ）
 
 - [ ] **Task 4.1**: Tier 2/3 判定（リンク・画像 → コード・表）
@@ -133,5 +145,6 @@
 
 ## Progress
 
-- Total: 19 tasks | Completed: 0 | In Progress: 0
-- Wave 0: 2（印刷/組版プロトタイプ・先行） / Wave 1: 5（並列） / Wave 2: 6 / Wave 3: 2 / Wave 4: 4
+- Total: 21 tasks | Completed: 0 | In Progress: 0
+- Wave 0: 3（印刷/組版/長尺PDF プロトタイプ・先行） / Wave 1: 5（並列） / Wave 2: 6 / Wave 3: 3 / Wave 4: 4
+- 注: Wave 1 全 + Wave 2 の storage/editor/app.css は実装・テスト済み（spec のチェックボックスは追って更新）。
