@@ -147,6 +147,7 @@ interface RubyToken { base: string; ruby: string; }
 }
 .tategaki p { text-indent: 1em; }  /* 段落字下げ（breaks:true との両立・最小補正） */
 ```
+- **段落アキの方式は Wave 0.2 で確定**: 段落間アキを `text-indent` のみで賄うか `margin-inline-start`（行方向のアキ）を併用するかは実機で判断し、本節に反映してから vertical.css を実装する（proto では `margin-inline-start` を仮採用しているが design 未確定）。
 - **`justify` はベストエフォート（P1指摘反映）**: 縦書きでの均等割り付けは行末・段落末の短い行や `text-align-last` のブラウザ差が大きく、完全な両端揃えは保証しない。受け入れ基準（合否ゲート）にはしない（requirements US-003 と整合）。
 - **クロスブラウザ厳守**: Chrome 専用プロパティ（例 `word-break: auto-phrase`）に依存しない。Chrome / Safari / Firefox の縦書き改行解釈の差を実機確認（NFR Compatibility）。
 
