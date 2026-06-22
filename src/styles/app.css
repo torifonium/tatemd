@@ -1,0 +1,179 @@
+/* ==========================================================================
+   app.css — レイアウト・UI スタイル
+   縦書き組版（writing-mode 等）は vertical.css の責務。ここでは書かない。
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   リセット・ベース
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* ヘッダ高さ（.app-header と .app-main の高さ計算で共有し、二重管理を避ける） */
+  --header-h: 48px;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", sans-serif;
+  font-size: 14px;
+  color: #1a1a1a;
+  background-color: #f5f5f5;
+}
+
+/* --------------------------------------------------------------------------
+   ヘッダ
+   -------------------------------------------------------------------------- */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-h);
+  padding: 0 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.app-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #1a1a1a;
+}
+
+/* 操作ボタン群 */
+.app-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   共通ボタンスタイル
+   -------------------------------------------------------------------------- */
+.paper-btn,
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #c8c8c8;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #333333;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.paper-btn:hover,
+.print-btn:hover {
+  background-color: #f0f0f0;
+  border-color: #999999;
+}
+
+.paper-btn:active,
+.print-btn:active {
+  background-color: #e4e4e4;
+}
+
+/* 用紙サイズ選択ボタン：選択中状態（Wave 3 で JS から付与） */
+.paper-btn[aria-pressed="true"],
+.paper-btn.is-active {
+  background-color: #1a1a1a;
+  border-color: #1a1a1a;
+  color: #ffffff;
+}
+
+/* 印刷ボタンは少し区別する（左に区切り線） */
+.print-btn {
+  margin-left: 8px;
+  border-left: 1px solid #c8c8c8;
+}
+
+/* --------------------------------------------------------------------------
+   メインエリア — CSS Grid 2カラム
+   左: textarea.editor  /  右: section.preview-pane
+   -------------------------------------------------------------------------- */
+.app-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* ヘッダを除いた残り高さ。100dvh でモバイルのアドレスバー由来の本文切れを回避 */
+  height: calc(100dvh - var(--header-h));
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   エディタ（左ペイン）
+   -------------------------------------------------------------------------- */
+.editor {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  border: none;
+  border-right: 1px solid #e0e0e0;
+  background-color: #fafafa;
+  font-family: "SFMono-Regular", "Menlo", "Consolas", "Hiragino Kaku Gothic ProN",
+    "Noto Sans Mono CJK JP", monospace;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #1a1a1a;
+  resize: none;
+  outline: none;
+}
+
+.editor:focus {
+  background-color: #ffffff;
+  border-right-color: #c0c0c0;
+}
+
+/* --------------------------------------------------------------------------
+   プレビューペイン（右ペイン）
+   -------------------------------------------------------------------------- */
+.preview-pane {
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  background-color: #ffffff;
+  overflow: auto;
+}
+
+/* .tategaki は縦書き化の入れ物（writing-mode 等は vertical.css で設定） */
+.tategaki {
+  /* 高さいっぱいに広げてスクロール対象にする */
+  min-height: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   最小フォールバック（狭幅: 縦積み）
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: 50vh 1fr;
+    height: auto;
+    min-height: calc(100dvh - var(--header-h));
+    overflow: visible;
+  }
+
+  .editor {
+    height: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .preview-pane {
+    height: 100%;
+    overflow: auto;
+  }
+}
