@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>印刷検証プロトタイプ — tatemd Wave 0 / Task 0.1</title>
+
+  <!-- 動的に差し替えられる @page スタイル -->
+  <style id="print-page">
+    @page { size: A5; margin: 15mm; }
+  </style>
+
+  <style>
+    /* ===== リセット ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ===== 画面レイアウト ===== */
+    body {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+      background: #f4f4f0;
+      color: #1a1a1a;
+    }
+
+    /* ヘッダ */
+    .app-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      background: #2c2c2c;
+      color: #fff;
+    }
+    .app-header h1 {
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      margin-right: auto;
+    }
+    .paper-btn {
+      padding: 4px 12px;
+      border: 1px solid #888;
+      background: #444;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 0.875rem;
+    }
+    .paper-btn[aria-pressed="true"],
+    .paper-btn.active {
+      background: #fff;
+      color: #2c2c2c;
+      border-color: #fff;
+      font-weight: bold;
+    }
+    .print-btn {
+      padding: 4px 14px;
+      border: 1px solid #aaa;
+      background: #556;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 0.875rem;
+    }
+    .print-btn:hover { background: #778; }
+
+    /* 2ペインメイン */
+    .app-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: calc(100vh - 44px);
+    }
+
+    /* 左ペイン: エディタ */
+    .editor {
+      width: 100%;
+      height: 100%;
+      padding: 16px;
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      border: none;
+      border-right: 1px solid #ccc;
+      resize: none;
+      background: #fafaf8;
+      outline: none;
+    }
+
+    /* 右ペイン: プレビュー */
+    .preview-pane {
+      overflow: auto;
+      padding: 16px;
+      background: #fff;
+    }
+
+    /* 縦書きコンテナ */
+    .tategaki {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      line-break: strict;
+      text-align: justify;
+      font-size: 1rem;
+      line-height: 2;
+      /* 画面上は高さを固定して横スクロールで複数ページ模倣 */
+      height: calc(100vh - 76px);
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    .tategaki p {
+      text-indent: 1em;
+      margin-inline-start: 1.5em; /* 段落間アキ（縦書きでは inline = 横方向） */
+    }
+
+    /* ===== 検証情報パネル ===== */
+    .checklist {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 320px;
+      background: #ffffcc;
+      border: 1px solid #cc9900;
+      border-radius: 6px 0 0 0;
+      padding: 12px 14px;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      z-index: 100;
+    }
+    .checklist summary {
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 4px;
+    }
+    .checklist ol {
+      margin-top: 6px;
+      padding-left: 1.4em;
+    }
+    .checklist li { margin-bottom: 4px; }
+
+    /* ===== 印刷スタイル ===== */
+    @media print {
+      /* UI 要素を隠す */
+      .app-header { display: none !important; }
+      .editor     { display: none !important; }
+      .checklist  { display: none !important; }
+
+      /* Grid を解除して本文を全幅に */
+      .app-main {
+        display: block;
+      }
+
+      /* プレビューペインをフロー復帰 */
+      .preview-pane {
+        position: static;
+        margin: 0;
+        padding: 0;
+        overflow: visible;
+        width: 100%;
+        height: auto;
+        background: none;
+      }
+
+      /* 縦書き本文: @page size が効かない Safari 向け実寸固定フォールバック */
+      .tategaki {
+        height: auto;
+        overflow: visible;
+        /* 画面用の overflow 解除 */
+      }
+
+      /* Safari フォールバック: @page { size } が無視された場合に本文ボックスを実寸固定 */
+      body[data-paper="a5"] .tategaki {
+        block-size: 210mm;   /* 縦書き: block 方向 = 紙の長辺 */
+        inline-size: 148mm;  /* 縦書き: inline 方向 = 紙の短辺 */
+      }
+      body[data-paper="b6"] .tategaki {
+        block-size: 182mm;
+        inline-size: 128mm;
+      }
+    }
+  </style>
+</head>
+<body data-paper="a5">
+
+  <!-- ヘッダ（印刷時は非表示） -->
+  <header class="app-header">
+    <h1>tatemd — 印刷検証 Wave 0 / Task 0.1</h1>
+    <span style="font-size:0.8rem; color:#aaa;">用紙:</span>
+    <button class="paper-btn active" id="btn-a5" onclick="setPaper('a5')">A5</button>
+    <button class="paper-btn"        id="btn-b6" onclick="setPaper('b6')">B6</button>
+    <button class="print-btn" onclick="window.print()">印刷プレビュー</button>
+  </header>
+
+  <!-- メイン: 2ペイン（Grid） -->
+  <main class="app-main">
+
+    <!-- 左: エディタ（印刷時は非表示） -->
+    <textarea class="editor" id="editor" spellcheck="false"><!-- このテキストエリアは印刷に含まれない --></textarea>
+
+    <!-- 右: プレビュー（縦書き本文） -->
+    <section class="preview-pane">
+      <div class="tategaki" id="tategaki-content">
+
+        <p>春の夜の夢ばかりなる手枕に、かひなく立たむ名こそ惜しけれ——そう詠んだ人のことを、私はずっと考えていた。もう何年も前のことだ。桜の花びらが窓枠に貼りつくほど風の強い夜に、私ははじめてその言葉に出会い、声に出して読んでみた。音が口の中で転がり、やがて静かに消えていった。</p>
+
+        <p>彼女の名前は雪乃といった。古風な名前だと最初は思ったが、会うたびにその名前が彼女によく似合っていると感じるようになった。雪のように白く、しかし溶けない何かを持っていた。</p>
+
+        <p>あれは四月の初旬のことだった。大学の図書館で偶然隣り合わせになり、彼女が手にしていた文庫本の表紙が目に入った。背文字が縦書きで、ひどく細い書体だった。「それ、好きなんですか」と私は聞いた。彼女は顔を上げず、少し間を置いてから「嫌いじゃないです」と答えた。</p>
+
+        <p>縦書きの文字には不思議な力がある。横書きが情報を流すものだとすれば、縦書きは情報を積み重ねるものだと思う。読む速度が変わり、呼吸が変わり、思考の質まで変わる気がする。雪乃はそういうことを、言葉ではなく態度で知っていた。</p>
+
+        <p>翌週も彼女は同じ席にいた。今度は別の文庫本を読んでいたが、やはり縦書きの本だった。「縦書きが好きなんですか」と今度は直接聞いた。彼女は本から目を離さずに「落ち着くんです、横書きより」と言った。私はそれ以上何も聞けなかった。</p>
+
+        <p>五月になると、図書館の窓から新緑が見えるようになった。光が葉を透き通り、緑と白と影が混じり合う時間帯がある。そのころには私たちは同じテーブルで本を読む習慣ができていた。言葉を交わすことは少なかったが、それが苦にならなかった。</p>
+
+        <p>ある日、彼女は私の読んでいる本を見て「横書きですね」と言った。責めるふうではなかった。ただ気づいたことを口にしただけだった。「縦書きで出版されている本ではないので」と私は答えた。「翻訳書なら仕方ないですね」と彼女は言い、また自分の本に視線を戻した。</p>
+
+        <p>その夏、私たちは初めて二人で外に出た。大学の近くにある古い喫茶店で、天井が高く、壁に古い雑誌の表紙が貼られていた。そのうちのいくつかは縦書きのレイアウトで、昭和の時代のものだった。「あの時代のデザインは縦書きと横書きが混在していて面白い」と雪乃は言った。「情報の流れ方が複数あって、目がどこから読めばいいか迷う。でもその迷いが、かえって読む気持ちを作る気がします」</p>
+
+        <p>私はコーヒーカップを持ったまま、彼女の言葉を反芻した。迷いが読む気持ちを作る。そういう逆説がいくつもある。</p>
+
+        <p>秋になると彼女は短い小説を書いていると言った。縦書きで、一行三十字、一ページ十四行と決めていると言った。「原稿用紙のますめみたいに」と私は言った。「それに近いかもしれません」と彼女は答えた。「でも原稿用紙よりも少し行間を広くしています。そのほうが、文字が呼吸できる気がするので」</p>
+
+        <p>文字が呼吸する。私はその言葉をノートに書き留めた。後になって読み返しても、その言葉は色褪せなかった。</p>
+
+        <p>冬が来て、図書館の暖房が効きすぎるようになった。私たちはだんだん外のベンチで話すようになった。息が白くなり、手袋をしたまま本のページをめくった。彼女の小説は第三章まで進んでいた。まだ誰にも見せていないと言った。「いつか見せてもらえますか」と私は聞いた。「縦書きで読めますか」と彼女は言った。「練習します」と私は答えた。</p>
+
+        <p>その返答が彼女を笑わせた。声を立てて笑うのを初めて聞いた。冬の空に白い息と一緒に、その笑い声が消えていった。</p>
+
+        <p>翌年の春、桜が満開になったころ、彼女から原稿のデータが届いた。縦書きのPDFだった。開くと、文字が右から左へ、上から下へ流れていた。最初の数行は少し読みづらかったが、ページをめくるうちに自然に感じられるようになった。視線の動きが変わり、呼吸が変わった。物語の中の光が、本当に窓から差し込んでくるように感じた。</p>
+
+        <p>読み終えると外はもう暗くなっていた。部屋の中に座ったまま、しばらく動けなかった。</p>
+
+        <p>彼女に感想を送ろうとして、横書きで打った文章が何度も消した。縦書きで書いたほうがいいと思った。でも縦書きで手紙を書く方法がわからなかった。結局、短い文章を横書きで送った。「読みました。また話しましょう」と。</p>
+
+        <p>彼女からの返信は一言だった。「よかったです」</p>
+
+        <p>その言葉の軽さと重さについて、私はいまも考えることがある。言葉は短いほど、その背後に広がるものが大きい。縦書きの文章がそうであるように、見えているものよりも、見えていないものが多い。</p>
+
+        <p>あれから何年が経った。雪乃は今、どこかで縦書きの文章を書いているだろうか。図書館の窓から見えた新緑のことを、私は毎年五月になると思い出す。あの光の中で彼女が読んでいた本の題名を、私はとうとう聞かなかった。</p>
+
+        <p>それでよかったのかもしれない。知らないことが、想像の余地を残す。縦書きの行間と同じように。</p>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- 検証チェックリスト（印刷時は非表示） -->
+  <details class="checklist" open>
+    <summary>検証手順（Task 0.1）</summary>
+    <ol>
+      <li><strong>用紙サイズ切替</strong>: A5 / B6 ボタンを押し「印刷プレビュー」→ PDF 保存。用紙が A5 / B6 に変わるか確認。</li>
+      <li><strong>本文のみ出力</strong>: 印刷プレビューでヘッダ・エディタが消え、縦書き本文のみが現れるか。</li>
+      <li><strong>複数ページ送り</strong>: 縦書き本文が 2 ページ目以降へ正しく流れるか（最大の地雷）。</li>
+      <li><strong>Safari フォールバック</strong>: Safari で <code>@page size</code> が無視された場合に実寸固定（A5=148×210mm / B6=128×182mm）で本らしい体裁になるか。</li>
+      <li><strong>3 ブラウザ</strong>: Chrome / Safari / Firefox で各ステップを繰り返す。</li>
+    </ol>
+  </details>
+
+  <script>
+    // 用紙サイズ切替: body[data-paper] 属性と <style id="print-page"> の @page を差し替える
+    function setPaper(size) {
+      document.body.dataset.paper = size;
+
+      // ボタン状態更新
+      document.getElementById('btn-a5').classList.toggle('active', size === 'a5');
+      document.getElementById('btn-b6').classList.toggle('active', size === 'b6');
+      document.getElementById('btn-a5').setAttribute('aria-pressed', size === 'a5');
+      document.getElementById('btn-b6').setAttribute('aria-pressed', size === 'b6');
+
+      // @page { size } を差し替え
+      const styleMap = {
+        a5: 'A5',
+        b6: 'B6',
+      };
+      let el = document.getElementById('print-page');
+      if (!el) {
+        el = document.createElement('style');
+        el.id = 'print-page';
+        document.head.appendChild(el);
+      }
+      el.textContent = `@page { size: ${styleMap[size]}; margin: 15mm; }`;
+    }
+
+    // 初期状態を確定
+    setPaper('a5');
+  </script>
+</body>
+</html>

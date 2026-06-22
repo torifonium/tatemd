@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>縦書き組版検証プロトタイプ — tatemd Wave 0 / Task 0.2</title>
+
+  <style>
+    /* ===== リセット ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ===== ページ全体 ===== */
+    body {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+      background: #f4f4f0;
+      color: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ===== ヘッダ ===== */
+    .page-header {
+      flex: 0 0 auto;
+      padding: 10px 16px;
+      background: #2c2c2c;
+      color: #fff;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .page-header h1 {
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 0.05em;
+      margin-right: auto;
+    }
+
+    /* ===== 縦書きプレビュー領域 ===== */
+    .preview-area {
+      flex: 1 1 auto;
+      overflow: hidden;
+      padding: 24px;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ===== 縦書きコンテナ (.tategaki) ===== */
+    .tategaki {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;   /* 英数字は自然な向きで（縦中横なし） */
+      line-break: strict;        /* 禁則はブラウザ委譲 */
+      text-align: justify;       /* 均等割り付け（ベストエフォート） */
+      font-size: 1rem;
+      line-height: 2;
+      /* 高さ＝縦書きの行方向 */
+      height: 100%;
+      /* 横スクロールで複数「ページ」を模倣（画面確認用） */
+      overflow-x: auto;
+      overflow-y: hidden;
+      column-gap: 3em;
+    }
+
+    /* 段落: 字下げ + 段落間アキ */
+    .tategaki p {
+      text-indent: 1em;
+      /* 縦書きでの段落間の空き（inline 方向 = 横方向） */
+      margin-inline-start: 2em;
+    }
+
+    /* 先頭段落は字下げなし（本文開始点） */
+    .tategaki p:first-child {
+      margin-inline-start: 0;
+    }
+
+    /* 小見出し */
+    .tategaki h2 {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-inline-start: 2.5em;
+      letter-spacing: 0.1em;
+    }
+
+    /* 区切り線 */
+    .tategaki hr {
+      border: none;
+      border-inline-start: 1px solid #999;
+      height: 5em;
+      margin-inline: 1.5em;
+    }
+
+    /* 短い行（段落末など）で justify が崩れる場合のフォールバック確認用クラス */
+    .tategaki .short-line {
+      text-align: start;
+    }
+
+    /* ===== 注釈パネル ===== */
+    .annotation-bar {
+      flex: 0 0 auto;
+      background: #2c2c2c;
+      color: #ddd;
+      font-size: 0.75rem;
+      padding: 6px 16px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .annotation-bar span { white-space: nowrap; }
+    .annotation-bar .label { color: #facc15; font-weight: bold; }
+
+    /* ===== 検証チェックリスト ===== */
+    .checklist {
+      position: fixed;
+      bottom: 36px;
+      right: 0;
+      width: 340px;
+      background: #ffffcc;
+      border: 1px solid #cc9900;
+      border-radius: 6px 0 0 6px;
+      padding: 12px 14px;
+      font-size: 0.78rem;
+      line-height: 1.55;
+      z-index: 100;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .checklist summary {
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 6px;
+    }
+    .checklist ol { padding-left: 1.4em; }
+    .checklist li { margin-bottom: 6px; }
+    .checklist code {
+      background: #eee;
+      padding: 0 3px;
+      border-radius: 2px;
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>tatemd — 縦書き組版検証 Wave 0 / Task 0.2</h1>
+    <span style="color:#aaa;">line-break:strict / text-orientation:mixed / text-align:justify / text-indent:1em</span>
+  </header>
+
+  <div class="preview-area">
+    <!--
+      .tategaki: 縦書き（writing-mode:vertical-rl）
+      確認ポイントを埋め込んだサンプル本文
+    -->
+    <div class="tategaki">
+
+      <!-- ── 禁則確認: 行頭・行末に来てはいけない約物 ── -->
+      <h2>禁則・約物確認</h2>
+
+      <p>行末禁則の確認をする。句読点（。、）は行頭に来てはならない。例えば「この文章の末尾に句点が来る場合、」正しく禁則が働けば句点は前の行の末尾に押し込まれるか、あるいは行の長さが調整される。「閉じ括弧」も行頭に出てはならない。</p>
+
+      <p>行頭禁則の確認もする。開き括弧（「）や（を行頭に置くことはできない。この段落の直前に開き括弧が来るように文章を組んでいる。ブラウザが正しく禁則を適用するなら、括弧の直後の文字と一緒に行末へ追い出されるはずだ。</p>
+
+      <p>連続した約物の禁則確認：「こんにちは」「さようなら」（ありがとう）——ダッシュ記号や三点リーダ……も行頭・行末に来ないことを確認する。連続する閉じ括弧「」）も禁則対象だ。</p>
+
+      <hr>
+
+      <!-- ── 半角英数字の縦書き表示（縦中横なし） ── -->
+      <h2>半角英数字（縦中横なし）</h2>
+
+      <p>半角の2桁数字は縦書きで90度倒れて表示される。例えば12や34や99は、<code>text-orientation:mixed</code>のみで縦中横処理を行わないため、横に倒れた状態になる。これが「読みにくいか」「許容できるか」を判断する。</p>
+
+      <p>西暦の4桁数字 2026 や 1868 はさらに倒れた状態になる。英単語 OK や CSS、HTML、tatemd、writing-mode といった単語も同様に横倒しになる。文中に英語が混在する場合の読みやすさを確認する。</p>
+
+      <p>数字だけの例：1、12、123、1234、12345。一桁は縦のまま、二桁以上は倒れる。小説本文で年号（2026年）や時刻（10時30分）が出てきた場合の見え方を想定して評価する。</p>
+
+      <hr>
+
+      <!-- ── 段落アキ・字下げ（breaks:true + 空行段落） ── -->
+      <h2>段落アキ・字下げ</h2>
+
+      <p>ここは最初の段落だ。先頭段落は <code>margin-inline-start:0</code> を設定しているので、段落間アキがない。本文の開始行に相当する。字下げ（<code>text-indent:1em</code>）は適用されている。</p>
+
+      <p>ここは二番目の段落。段落間には <code>margin-inline-start:2em</code> による空きが入る。縦書きにおける <code>margin-inline</code> は水平方向の余白になる（右から左への行送り）。これが本らしい段落アキに見えるかを確認する。</p>
+
+      <p>三番目の段落。字下げと段落アキが揃って入ると、縦書き小説らしい組版に見えるはずだ。短い段落。</p>
+
+      <p>四番目の段落は少し長い。段落の字下げが一貫して効いているかを確かめるために、意図的に複数行にわたる文章を置いている。縦書きで読む場合、字下げは行の先頭（上端）に来る。この位置が揃っていれば字下げが正しく機能している。</p>
+
+      <hr>
+
+      <!-- ── text-align:justify の均等割り付け ── -->
+      <h2>均等割り付け（justify）</h2>
+
+      <p>均等割り付けの確認。<code>text-align:justify</code>を設定しているため、各行の文字が行の両端に揃うように調整されるはずだ。短い行や段落末の行では均等割り付けが崩れることがある。</p>
+
+      <p>特に注意が必要なのは段落最終行だ。</p>
+
+      <p>上の行は意図的に短くしてある。<code>justify</code>では最終行が引き伸ばされる場合があり、それが美しいかどうかを確認する。<code>text-align-last</code>のブラウザ差も観察ポイントだ。</p>
+
+      <p>また、句読点や括弧など約物が連続する箇所で均等割り付けの空きが変に入らないかも確認する。「この文章には、句点と読点と」「括弧が混在している（ので）」均等割り付けとの相性を見る。</p>
+
+      <hr>
+
+      <!-- ── 総合サンプル：短編小説冒頭風 ── -->
+      <h2>総合サンプル</h2>
+
+      <p>三月の終わりに、私は初めて縦書きの手紙を書いた。便箋は薄い青で、罫線が縦に引いてあった。筆ペンは持っていなかったのでボールペンで書いた。文字は丸くなって、どこか子どものようだった。</p>
+
+      <p>「お元気ですか」と書くところから始まり、何を伝えたいのかわからなくなって、三枚目で止めた。書きかけの便箋を封筒に入れ、送らなかった。</p>
+
+      <p>そのことを思い出したのは、2026年の春のことだ。引っ越しの荷物を整理していたら、あの封筒が出てきた。消印のない、まっさらな封筒。中の便箋は少し黄ばんでいた。</p>
+
+      <p>読み返してみると、文字が思ったより整っていた。縦書きというのは、横書きよりも字が上手に見える気がする。重力の方向と文字の流れが一致するからか、それとも読む側の目が慣れているからか、私にはわからない。</p>
+
+      <p>OK、と思った。送らなかったことに後悔はなかった。ただ、また縦書きで何かを書きたいと思った。</p>
+
+    </div>
+  </div>
+
+  <!-- 画面下のステータスバー -->
+  <div class="annotation-bar">
+    <span><span class="label">writing-mode:</span> vertical-rl</span>
+    <span><span class="label">text-orientation:</span> mixed（縦中横なし）</span>
+    <span><span class="label">line-break:</span> strict</span>
+    <span><span class="label">text-align:</span> justify</span>
+    <span><span class="label">text-indent:</span> 1em</span>
+    <span><span class="label">line-height:</span> 2</span>
+  </div>
+
+  <!-- 検証チェックリスト -->
+  <details class="checklist" open>
+    <summary>検証手順（Task 0.2）— 3 ブラウザで確認</summary>
+    <ol>
+      <li>
+        <strong>禁則</strong>: 行頭に句点（。）・読点（、）・閉じ括弧（」）、行末に開き括弧（「）が来ていないか。<code>line-break:strict</code> が効いているか。
+      </li>
+      <li>
+        <strong>半角英数字</strong>: 2桁数字「12」「34」「99」、西暦「2026」、英単語「OK」「CSS」が横倒しになる。倒れ方が許容できる見え方か（縦中横なしの前提で評価）。
+      </li>
+      <li>
+        <strong>段落アキ・字下げ</strong>: 各段落の先頭に <code>text-indent:1em</code> による字下げが入り、段落間に適切な空きがあるか。本らしい縦書きに見えるか。
+      </li>
+      <li>
+        <strong>均等割り付け</strong>: <code>text-align:justify</code> で行の両端が揃うか。段落最終行（短い行）で引き伸ばしや崩れが起きないか。ブラウザ間の差を記録する。
+      </li>
+      <li>
+        <strong>3ブラウザ比較</strong>: Chrome / Safari / Firefox で上記 4 点を順に確認し、差異をメモする。崩れるものは要件緩和 or ROADMAP 送りを判断。
+      </li>
+    </ol>
+  </details>
+
+</body>
+</html>
