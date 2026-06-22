@@ -17,6 +17,8 @@
 :root {
   /* ヘッダ高さ（.app-header と .app-main の高さ計算で共有し、二重管理を避ける） */
   --header-h: 48px;
+  /* ペイン境界の太さ */
+  --divider-w: 6px;
 }
 
 html,
@@ -107,10 +109,35 @@ body {
    -------------------------------------------------------------------------- */
 .app-main {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* 左=エディタ（可変・スプリッターでドラッグ） / 中=仕切り / 右=プレビュー（残り） */
+  grid-template-columns: var(--editor-w, 1fr) var(--divider-w) 1fr;
   /* ヘッダを除いた残り高さ。100dvh でモバイルのアドレスバー由来の本文切れを回避 */
   height: calc(100dvh - var(--header-h));
   overflow: hidden;
+}
+
+/* ペイン境界（ドラッグで左右比率を変更） */
+.pane-divider {
+  width: var(--divider-w);
+  height: 100%;
+  cursor: col-resize;
+  background-color: #e0e0e0;
+  /* 当たり判定を少し広げるための擬似要素 */
+  position: relative;
+  transition: background-color 0.12s ease;
+  touch-action: none; /* タッチでのスクロールを抑止しドラッグに専念 */
+}
+.pane-divider:hover,
+.pane-divider:focus-visible,
+.pane-divider.is-dragging {
+  background-color: #1a1a1a;
+  outline: none;
+}
+/* 細い線でも掴みやすいよう、見た目より広い当たり判定 */
+.pane-divider::before {
+  content: "";
+  position: absolute;
+  inset: 0 -4px;
 }
 
 /* --------------------------------------------------------------------------
@@ -164,6 +191,11 @@ body {
     height: auto;
     min-height: calc(100dvh - var(--header-h));
     overflow: visible;
+  }
+
+  /* 狭幅では縦積みにし、ドラッグ境界は隠す（display:none で grid から除外） */
+  .pane-divider {
+    display: none;
   }
 
   .editor {
