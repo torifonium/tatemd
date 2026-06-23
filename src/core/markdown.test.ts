@@ -122,30 +122,58 @@ describe('renderToTypesettingHtml', () => {
     expect(typeof renderToTypesettingHtml('   \n  ')).toBe('string');
   });
 
-  // --- Tier 境界: Tier 2/3 記法は Tier 1 では描画されない（無効化の意図を固定）---
-  it('Tier 2 リンク [x](url) は <a> を生成しない', () => {
+  // --- Tier 2: リンク・画像（有効化済み）---
+
+  it('Tier 2 リンク [x](url) が <a href="..."> を生成する', () => {
     const html = renderToTypesettingHtml('[リンク](https://example.com)');
-    expect(html).not.toContain('<a ');
-    expect(html).not.toContain('href');
+    expect(html).toContain('<a ');
+    expect(html).toContain('href="https://example.com"');
   });
 
-  it('Tier 2 画像 ![alt](src) は <img> を生成しない', () => {
+  it('Tier 2 リンク [x](javascript:alert(1)) の href に javascript: が出ない（validateLink 無害化）', () => {
+    const html = renderToTypesettingHtml('[危険](javascript:alert(1))');
+    // validateLink が javascript: を拒否するため <a href> が生成されない（プレーンテキストに落ちる）
+    expect(html).not.toContain('href="javascript:');
+    expect(html).not.toContain("<a ");
+  });
+
+  it('Tier 2 画像 ![alt](src) が <img を生成する', () => {
     const html = renderToTypesettingHtml('![代替](pic.png)');
-    expect(html).not.toContain('<img');
+    expect(html).toContain('<img');
+    expect(html).toContain('src="pic.png"');
+    expect(html).toContain('alt="代替"');
   });
 
-  it('Tier 3 インラインコード `x` は <code> を生成しない', () => {
+  it('Tier 2 画像 ![x](javascript:...) の src に javascript: が出ない（validateLink 無害化）', () => {
+    const html = renderToTypesettingHtml('![x](javascript:alert(1))');
+    // validateLink が javascript: を拒否するため <img src> が生成されない（プレーンテキストに落ちる）
+    expect(html).not.toContain('src="javascript:');
+    expect(html).not.toContain("<img");
+  });
+
+  // --- Tier 3: コード・テーブル（有効化済み）---
+
+  it('Tier 3 インラインコード `x` が <code> を生成する', () => {
     const html = renderToTypesettingHtml('これは `コード` です');
-    expect(html).not.toContain('<code>');
+    expect(html).toContain('<code>');
   });
 
-  it('Tier 3 フェンスコードブロックは <pre>/<code> を生成しない', () => {
+  it('Tier 3 フェンスコードブロックが <pre> と <code> を生成する', () => {
     const html = renderToTypesettingHtml('```\nconst a = 1;\n```');
-    expect(html).not.toContain('<pre>');
-    expect(html).not.toContain('<code>');
+    expect(html).toContain('<pre>');
+    expect(html).toContain('<code>');
   });
 
-  it('打消し線 ~~x~~ は <s>/<del> を生成しない', () => {
+  it('Tier 3 テーブルが <table> を生成する', () => {
+    const md = '| 列A | 列B |\n| --- | --- |\n| 値1 | 値2 |';
+    const html = renderToTypesettingHtml(md);
+    expect(html).toContain('<table>');
+    expect(html).toContain('<th>');
+    expect(html).toContain('<td>');
+  });
+
+  // --- Tier 外: strikethrough は引き続き無効（Tier 定義外）---
+  it('打消し線 ~~x~~ は <s>/<del> を生成しない（strikethrough 無効）', () => {
     const html = renderToTypesettingHtml('~~消し~~');
     expect(html).not.toContain('<s>');
     expect(html).not.toContain('<del>');
