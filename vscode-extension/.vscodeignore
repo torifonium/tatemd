@@ -1,0 +1,20 @@
+# ソースコード・設定（パッケージに含めない）
+src/
+tsconfig.json
+build.mjs
+
+# ビルド中間物
+**/*.map
+
+# 依存パッケージ（vsce が out/ を使うため不要）
+node_modules/
+
+# ルートの tatemd ソース（拡張には不要）
+../src/
+../index.html
+../vite.config.ts
+../package.json
+../tsconfig.json
+../.gitignore
+../.eslintrc.cjs
+../.prettierrc.json
