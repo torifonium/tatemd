@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="TATEmd">
+  <rect width="64" height="64" rx="12" fill="#1a1a1a"/>
+  <!-- 縦書きを示す「縦」字 -->
+  <text x="32" y="46" font-family="'Hiragino Mincho ProN','Yu Mincho',serif" font-size="44" fill="#f7f5ef" text-anchor="middle">縦</text>
+</svg>

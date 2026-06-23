@@ -1,15 +1,37 @@
 {
   "name": "tatemd-vscode",
   "displayName": "TATEmd — 縦書き Markdown プレビュー",
-  "description": "Markdown を縦書きでプレビューする VSCode 拡張",
+  "description": "Markdown を縦書きでプレビューし、絵巻 PDF（横長1枚）として書き出す VSCode 拡張",
   "version": "0.0.1",
   "publisher": "torifonium",
-  "private": true,
+  "license": "MIT",
+  "author": "torifonium",
+  "homepage": "https://github.com/torifonium/tatemd/tree/main/vscode-extension#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/torifonium/tatemd.git",
+    "directory": "vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/torifonium/tatemd/issues"
+  },
+  "keywords": [
+    "縦書き",
+    "tategaki",
+    "vertical",
+    "vertical writing",
+    "japanese",
+    "markdown",
+    "preview",
+    "emaki",
+    "pdf"
+  ],
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Other"],
+  "categories": ["Other", "Visualization", "Formatters"],
   "main": "./out/extension.js",
+  "activationEvents": [],
   "contributes": {
     "commands": [
       {
@@ -38,7 +60,8 @@
   },
   "scripts": {
     "build": "node build.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "vscode:prepublish": "node build.mjs"
   },
   "dependencies": {
     "markdown-it": "^14.1.0"

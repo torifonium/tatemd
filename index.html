@@ -3,7 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TATEmd</title>
+    <title>TATEmd — 縦書き Markdown プレビュー</title>
+
+    <!-- SEO / SNS メタ -->
+    <!-- ⚠️ 独自ドメイン移行時（例: https://tatemd.riumu.net/）は下記の絶対URL（og:url / og:image / twitter:image）を要更新 -->
+    <meta
+      name="description"
+      content="Markdown を書くと和文組版の縦書きで即プレビュー。印刷向けのページ分割PDFと絵巻物スタイルの長尺PDFに対応。インストール不要・完全クライアントサイドで原稿は外部送信されません。"
+    />
+    <meta name="theme-color" content="#1a1a1a" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="TATEmd — 縦書き Markdown プレビュー" />
+    <meta
+      property="og:description"
+      content="Markdown を書くと和文組版の縦書きで即プレビュー。印刷向けページ分割PDF・絵巻物スタイルの長尺PDFに対応。インストール不要・完全クライアントサイド。"
+    />
+    <meta property="og:type" content="website" />
+    <!-- 絶対URL（GitHub Pages の base は /tatemd/）。独自ドメイン移行時に要更新。 -->
+    <meta property="og:url" content="https://torifonium.github.io/tatemd/" />
+    <!-- SNSスクレイパは相対パスを解決できないため絶対URLで指定。独自ドメイン移行時に要更新。 -->
+    <meta property="og:image" content="https://torifonium.github.io/tatemd/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="TATEmd 縦書き Markdown プレビュー" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:site_name" content="TATEmd" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TATEmd — 縦書き Markdown プレビュー" />
+    <meta
+      name="twitter:description"
+      content="Markdown を書くと和文組版の縦書きで即プレビュー。印刷向けページ分割PDF・絵巻物スタイルの長尺PDFに対応。インストール不要・完全クライアントサイド。"
+    />
+    <meta name="twitter:image" content="https://torifonium.github.io/tatemd/og-image.png" />
+
+    <!-- favicon（base 相対。Vite が public/ をそのまま配信） -->
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+
     <link rel="stylesheet" href="/src/styles/app.css" />
     <link rel="stylesheet" href="/src/styles/vertical.css" />
     <link rel="stylesheet" href="/src/styles/print.css" />

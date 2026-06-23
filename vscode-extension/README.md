@@ -1,7 +1,39 @@
 # TATEmd — 縦書き Markdown プレビュー（VSCode 拡張）
 
-Markdown ファイルを縦書きでリアルタイムプレビューする VSCode 拡張です。
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/torifonium.tatemd-vscode?label=VS%20Code%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=torifonium.tatemd-vscode)
+[![Open VSX](https://img.shields.io/open-vsx/v/torifonium/tatemd-vscode?label=Open%20VSX)](https://open-vsx.org/extension/torifonium/tatemd-vscode)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/torifonium/tatemd/blob/main/LICENSE)
+
+Markdown ファイルを **縦書き** でリアルタイムプレビューし、**絵巻 PDF（横長1枚）** として書き出せる VSCode 拡張です。
 [tatemd](https://github.com/torifonium/tatemd) の変換コア（`renderToTypesettingHtml`）と縦書き CSS を直接再利用しています。
+
+## 機能
+
+- **縦書きプレビュー**: Markdown を日本語縦書き（右から左）でレンダリングし、エディタ編集に追従してリアルタイム更新（150ms デバウンス）
+- **絵巻 PDF 書き出し**: 全文を横長1枚の絵巻状 PDF として書き出し
+
+## インストール
+
+### VS Code Marketplace
+
+1. 拡張ビュー（`Ctrl+Shift+X` / `Cmd+Shift+X`）を開く
+2. 「TATEmd」で検索してインストール
+   - または [Marketplace ページ](https://marketplace.visualstudio.com/items?itemName=torifonium.tatemd-vscode) からインストール
+
+### Open VSX（VSCodium など）
+
+[Open VSX のページ](https://open-vsx.org/extension/torifonium/tatemd-vscode) からインストール、または拡張ビューで「TATEmd」を検索してください。
+
+### 手動インストール（.vsix）
+
+[Releases](https://github.com/torifonium/tatemd/releases) から `.vsix` をダウンロードし、次のいずれかで導入します。
+
+- 拡張ビュー右上の `...` →「VSIX からのインストール...」
+- コマンドラインから:
+
+  ```bash
+  code --install-extension tatemd-vscode-<version>.vsix
+  ```
 
 ## 使い方
 
@@ -10,6 +42,7 @@ Markdown ファイルを縦書きでリアルタイムプレビューする VSCo
    - コマンドパレット（`Ctrl+Shift+P` / `Cmd+Shift+P`）から「TATEmd: 縦書きプレビューを開く」を実行
    - エディタ右上のタイトルバーアイコン（Markdown ファイルのみ表示）をクリック
 3. エディタで編集するとプレビューが自動で更新されます（150ms デバウンス）
+4. 絵巻 PDF として保存したい場合は「TATEmd: 絵巻 PDF を書き出す（横長1枚）」を実行
 
 ## 開発（ローカルビルド）
 
@@ -44,10 +77,12 @@ npm run typecheck  # 型チェックのみ（出力なし）
 }
 ```
 
-## Marketplace 公開
+## 公開（メンテナ向け）
 
-現在は未公開です。公開する場合は `vsce package` でパッケージ化し、`vsce publish` で公開してください。
+`ext-v*` タグ（例: `ext-v0.0.1`）を push すると、GitHub Actions
+（`.github/workflows/publish-extension.yml`）が VS Code Marketplace と Open VSX の
+両方へ公開します。手動実行（workflow_dispatch）も可能です。
 
 ## ライセンス
 
-MIT — 詳細はリポジトリルートの [LICENSE](../LICENSE) を参照してください。
+MIT — 詳細はリポジトリルートの [LICENSE](https://github.com/torifonium/tatemd/blob/main/LICENSE) を参照してください。

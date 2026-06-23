@@ -30,3 +30,6 @@ vscode-extension/media/
 
 # CLI 用 core ビルド出力
 dist-cli/
+
+# メンテナ向けローカルメモ（公開・認証手順。コミットしない）
+RELEASE_TODO.local.md

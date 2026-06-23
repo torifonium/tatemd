@@ -2,11 +2,15 @@
 src/
 tsconfig.json
 build.mjs
+.vscodeignore
 
-# ビルド中間物
+# ロックファイル（vsix には不要）
+package-lock.json
+
+# ビルド中間物（ソースマップは配布物に含めない）
 **/*.map
 
-# 依存パッケージ（vsce が out/ を使うため不要）
+# 依存パッケージ（out/ にバンドル済みのため不要）
 node_modules/
 
 # ルートの tatemd ソース（拡張には不要）
@@ -18,3 +22,8 @@ node_modules/
 ../.gitignore
 ../.eslintrc.cjs
 ../.prettierrc.json
+
+# 含めるもの（参考）:
+#   out/extension.js  … バンドル済みエントリ
+#   media/vertical.css … 縦書き CSS
+#   README.md / LICENSE … Marketplace 表示用

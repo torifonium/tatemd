@@ -1,0 +1,55 @@
+name: Publish VSCode Extension
+
+# VS Code Marketplace と Open VSX の両方へ拡張を公開する。
+# Pages デプロイ（deploy.yml）と混ざらないよう、専用タグ `ext-v*` を使う。
+#
+# 必要な GitHub Secrets（リポジトリ Settings → Secrets and variables → Actions に登録）:
+#   VSCE_PAT … VS Code Marketplace 公開用 Personal Access Token
+#              （Azure DevOps の torifonium publisher に対する Marketplace > Manage 権限）
+#   OVSX_PAT … Open VSX 公開用アクセストークン
+#              （open-vsx.org のアカウントで namespace `torifonium` を取得済みであること）
+on:
+  push:
+    tags:
+      - 'ext-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vscode-extension
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          # vscode-extension/ 配下の lockfile をキャッシュ対象にする
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build extension
+        run: npm run build
+
+      # 一度だけ vsix を作り、両レジストリに同じ成果物を渡す
+      # （ovsx のオンザフライ packaging に依存せず、配布物を一致させる）
+      - name: Package vsix
+        run: npx --yes @vscode/vsce package -o tatemd-vscode.vsix
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx --yes @vscode/vsce publish -p "$VSCE_PAT" --packagePath tatemd-vscode.vsix
+
+      - name: Publish to Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: npx --yes ovsx publish tatemd-vscode.vsix -p "$OVSX_PAT"

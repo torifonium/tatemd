@@ -1,9 +1,47 @@
 {
   "name": "tatemd",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
-  "description": "Vertical-writing Markdown previewer (WIP)",
+  "description": "Vertical-writing (tategaki) Markdown previewer & faithful PDF exporter (emaki / book)",
+  "license": "MIT",
+  "author": "torifonium",
+  "homepage": "https://github.com/torifonium/tatemd#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/torifonium/tatemd.git"
+  },
+  "bugs": {
+    "url": "https://github.com/torifonium/tatemd/issues"
+  },
+  "keywords": [
+    "markdown",
+    "vertical-writing",
+    "tategaki",
+    "縦書き",
+    "japanese",
+    "typesetting",
+    "pdf",
+    "emaki",
+    "puppeteer",
+    "vivliostyle",
+    "cli"
+  ],
+  "bin": {
+    "tatemd": "bin/tatemd.mjs"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist-cli/core/markdown.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin/",
+    "tools/",
+    "dist-cli/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -12,10 +50,15 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "lint": "eslint . --ext .ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "prepublishOnly": "npm run build:cli"
   },
   "dependencies": {
     "markdown-it": "^14.1.0"
+  },
+  "optionalDependencies": {
+    "puppeteer": "^23.0.0",
+    "@vivliostyle/cli": "^8.0.0"
   },
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
@@ -28,5 +71,8 @@
     "typescript": "^5.5.4",
     "vite": "^5.4.8",
     "vitest": "^2.1.2"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

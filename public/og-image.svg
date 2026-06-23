@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="TATEmd 縦書きMarkdownプレビュー">
+  <defs>
+    <!-- 紙の質感: 微かな縦のトーンむら -->
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7f5ef"/>
+      <stop offset="1" stop-color="#efece3"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1a1a"/>
+      <stop offset="1" stop-color="#2a2a2a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 背景（紙） -->
+  <rect width="1200" height="630" fill="url(#paper)"/>
+
+  <!-- 原稿用紙の罫: 右側プレビュー領域の縦の枠 -->
+  <g stroke="#d8d3c6" stroke-width="2" fill="none">
+    <rect x="60" y="60" width="1080" height="510" rx="10"/>
+    <line x1="600" y1="60" x2="600" y2="570"/>
+  </g>
+
+  <!-- 左ペイン: 「Markdown を書く」エディタの示唆（横書きの淡いテキスト行） -->
+  <g fill="#c7c1b2">
+    <rect x="110" y="120" width="360" height="14" rx="7"/>
+    <rect x="110" y="160" width="300" height="12" rx="6"/>
+    <rect x="110" y="194" width="340" height="12" rx="6"/>
+    <rect x="110" y="228" width="240" height="12" rx="6"/>
+    <rect x="110" y="280" width="320" height="12" rx="6"/>
+    <rect x="110" y="314" width="280" height="12" rx="6"/>
+    <rect x="110" y="348" width="360" height="12" rx="6"/>
+    <rect x="110" y="382" width="200" height="12" rx="6"/>
+  </g>
+  <text x="110" y="510" font-family="'Helvetica Neue',Arial,sans-serif" font-size="22" fill="#9a9484"># Markdown を書くと…</text>
+
+  <!-- 右ペイン: 縦書きプレビューの主役テキスト（vertical-rl を SVG で表現: 右→左の列、各列は縦に文字を積む） -->
+  <!-- 1列目（右端） -->
+  <g font-family="'Hiragino Mincho ProN','Yu Mincho',serif" font-size="64" fill="url(#ink)" text-anchor="middle">
+    <text x="1060" y="160">縦</text>
+    <text x="1060" y="236">書</text>
+    <text x="1060" y="312">き</text>
+    <text x="1060" y="388">で</text>
+    <text x="1060" y="464">即</text>
+  </g>
+  <!-- 2列目 -->
+  <g font-family="'Hiragino Mincho ProN','Yu Mincho',serif" font-size="64" fill="url(#ink)" text-anchor="middle">
+    <text x="950" y="160">プ</text>
+    <text x="950" y="236">レ</text>
+    <text x="950" y="312">ビ</text>
+    <text x="950" y="388">ュ</text>
+    <text x="950" y="464">ー</text>
+  </g>
+  <!-- 3列目（やや淡く奥行き） -->
+  <g font-family="'Hiragino Mincho ProN','Yu Mincho',serif" font-size="56" fill="#5a5a5a" text-anchor="middle">
+    <text x="848" y="166">和</text>
+    <text x="848" y="234">文</text>
+    <text x="848" y="302">組</text>
+    <text x="848" y="370">版</text>
+  </g>
+
+  <!-- 左下: ブランド + コピー -->
+  <g>
+    <text x="110" y="450" font-family="'Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="92" letter-spacing="-2" fill="url(#ink)">TATEmd</text>
+    <text x="112" y="500" font-family="'Hiragino Sans','Helvetica Neue',Arial,sans-serif" font-size="30" fill="#3a6b3a" font-weight="600">縦書き Markdown プレビュー</text>
+  </g>
+
+  <!-- 朱の落款風アクセント（右下） -->
+  <g>
+    <rect x="1050" y="500" width="56" height="56" rx="6" fill="#9b2d20"/>
+    <text x="1078" y="540" font-family="'Hiragino Mincho ProN',serif" font-size="34" fill="#f7f5ef" text-anchor="middle">縦</text>
+  </g>
+</svg>
