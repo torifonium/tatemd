@@ -15,12 +15,21 @@
       {
         "command": "tatemd.openPreview",
         "title": "TATEmd: 縦書きプレビューを開く"
+      },
+      {
+        "command": "tatemd.exportEmaki",
+        "title": "TATEmd: 絵巻 PDF を書き出す（横長1枚）"
       }
     ],
     "menus": {
       "editor/title": [
         {
           "command": "tatemd.openPreview",
+          "when": "editorLangId == markdown",
+          "group": "navigation"
+        },
+        {
+          "command": "tatemd.exportEmaki",
           "when": "editorLangId == markdown",
           "group": "navigation"
         }

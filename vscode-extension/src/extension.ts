@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
 import { Uri, ViewColumn } from 'vscode';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import { renderToTypesettingHtml } from '../../src/core/markdown';
+import { buildEmakiDocument } from '../../src/core/emakiDocument';
 
 /** デバウンス待機時間（ミリ秒） */
 const DEBOUNCE_MS = 150;
@@ -116,6 +120,43 @@ export function activate(context: vscode.ExtensionContext): void {
   });
 
   context.subscriptions.push(command);
+
+  // --- 絵巻 PDF 書き出しコマンド ---
+  // 縦書き本文だけの自己完結 HTML（core/buildEmakiDocument）を一時ファイルに書き、
+  // 既定ブラウザで開く。ユーザーはそこから「PDFで保存」/ ⌘P で横長 1 枚の PDF を得る。
+  // （Web ティアと同じ HTML 生成・同じ「印刷時 html/body 高さ固定」テクニックを共有）
+  const exportCommand = vscode.commands.registerCommand('tatemd.exportEmaki', async () => {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor || editor.document.languageId !== 'markdown') {
+      vscode.window.showWarningMessage(
+        'TATEmd: Markdown ファイルを開いた状態でコマンドを実行してください。'
+      );
+      return;
+    }
+
+    try {
+      const cssPath = Uri.joinPath(context.extensionUri, 'media', 'vertical.css').fsPath;
+      const css = fs.readFileSync(cssPath, 'utf8');
+      const html = buildEmakiDocument({
+        bodyHtml: renderToTypesettingHtml(editor.document.getText()),
+        css,
+      });
+
+      const outPath = path.join(os.tmpdir(), `tatemd-emaki-${Date.now()}.html`);
+      fs.writeFileSync(outPath, html, 'utf8');
+
+      await vscode.env.openExternal(Uri.file(outPath));
+      vscode.window.showInformationMessage(
+        'TATEmd: ブラウザで絵巻を開きました。「PDFで保存」または ⌘P / Ctrl+P → 「PDFに保存」で横長1枚の PDF を保存できます。'
+      );
+    } catch (err) {
+      vscode.window.showErrorMessage(
+        `TATEmd: 絵巻 PDF の書き出しに失敗しました: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  });
+
+  context.subscriptions.push(exportCommand);
 }
 
 export function deactivate(): void {
