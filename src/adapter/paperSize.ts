@@ -9,10 +9,12 @@
 
 import { type PaperSize, loadPaperSize, savePaperSize } from './storage';
 
-// @page size に渡す CSS 識別子（大文字）
+// @page { size } へ渡す寸法。
+// 注意: CSS @page の size キーワードに B6 は存在しない（A5/A4/A3/B5/B4/JIS-B5/JIS-B4 のみ）。
+// `size: B6` は無効で Chrome は A4 にフォールバックするため、実寸 mm で指定して確実に効かせる。
 const DIM: Record<PaperSize, string> = {
-  a5: 'A5',
-  b6: 'B6',
+  a5: '148mm 210mm', // A5
+  b6: '128mm 182mm', // JIS B6（和書の判型）
 } as const;
 
 // デフォルト用紙サイズ

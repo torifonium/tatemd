@@ -32,24 +32,24 @@ describe('applyPaperSize', () => {
     expect(el).not.toBeNull();
   });
 
-  it("applyPaperSize('b6') で textContent に 'B6' が含まれる", () => {
+  it("applyPaperSize('b6') で textContent に B6 実寸(128mm 182mm)が含まれる", () => {
     applyPaperSize('b6');
     const el = document.getElementById('print-page');
-    expect(el?.textContent).toContain('B6');
+    expect(el?.textContent).toContain('128mm 182mm');
   });
 
-  it("applyPaperSize('a5') で textContent に 'A5' が含まれる", () => {
+  it("applyPaperSize('a5') で textContent に A5 実寸(148mm 210mm)が含まれる", () => {
     applyPaperSize('a5');
     const el = document.getElementById('print-page');
-    expect(el?.textContent).toContain('A5');
+    expect(el?.textContent).toContain('148mm 210mm');
   });
 
-  it("切替後に textContent が新しいサイズに更新される", () => {
+  it('切替後に textContent が新しいサイズに更新される', () => {
     applyPaperSize('a5');
     applyPaperSize('b6');
     const el = document.getElementById('print-page');
-    expect(el?.textContent).toContain('B6');
-    expect(el?.textContent).not.toContain('A5');
+    expect(el?.textContent).toContain('128mm 182mm');
+    expect(el?.textContent).not.toContain('148mm 210mm');
   });
 
   it('applyPaperSize 後に loadPaperSize() が同じ値を返す（storage 保存）', () => {
