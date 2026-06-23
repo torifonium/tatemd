@@ -41,15 +41,21 @@ https://torifonium.github.io/tatemd/
 
 URL を開くだけで縦書きプレビューが始まる。左ペインに Markdown を書くと右ペインに縦書きでリアルタイム反映される。
 
-ヘッダの `A5` / `B6` ボタンで用紙サイズを選び、`PDF・印刷` ボタンでそのままブラウザ印刷ダイアログへ。`長尺（縦巻）` を選ぶと絵巻物スタイルの長尺一枚 PDF が出力できる。
+ヘッダの `A5` / `B6` ボタンで用紙サイズを選び、`印刷` ボタンでブラウザの印刷ダイアログから本文のみを PDF／印刷できる。絵巻物スタイルの長尺一枚 PDF は、ブラウザではベスト努力、忠実版は下記の CLI で出力する。
 
-### 忠実 PDF CLI（Puppeteer・将来）
+### 忠実 PDF CLI（Puppeteer）
+
+`tools/emaki-pdf.mjs` は、用紙サイズを無視して**横にいくらでも長い 1 枚**の縦書き PDF を、文字を画像化せず（実テキストのまま）確実に生成する。
 
 ```bash
-node tools/emaki-pdf.mjs input.md output.pdf
+npm i -D puppeteer
+# 絵巻（長尺一枚）
+node tools/emaki-pdf.mjs input.html output.pdf --mode emaki
+# ページ分割（A5/B6）
+node tools/emaki-pdf.mjs input.html output.pdf --mode paged --paper A5
 ```
 
-> CLI は現在開発中です。詳細は [ROADMAP](ROADMAP.md) を参照してください。
+> 現在の入力は HTML。Markdown を直接入力にする `core` 連携は [ROADMAP](ROADMAP.md) を参照。
 
 ---
 
@@ -78,15 +84,22 @@ npm run build   # プロダクションビルド（dist/ へ出力）
 src/
 ├── core/        # DOM 非依存の純粋関数（Markdown → 組版 HTML）
 │   ├── markdown.ts         # renderToTypesettingHtml(md): string
-│   └── sampleManuscript.ts # 同梱サンプル原稿
-└── adapter/     # UI 層（DOM・LocalStorage・印刷）
-    ├── app.ts
-    ├── editor.ts
-    ├── preview.ts
-    ├── storage.ts
-    ├── paperSize.ts
-    ├── pdfExport.ts
-    └── debounce.ts
+│   ├── sampleManuscript.ts # 同梱サンプル原稿
+│   └── ruby.ts             # ルビ記法パーサの IF（将来用）
+├── adapter/     # UI 層（DOM・LocalStorage・印刷）
+│   ├── app.ts              # 全体の結線
+│   ├── editor.ts
+│   ├── storage.ts
+│   ├── paperSize.ts
+│   ├── splitter.ts
+│   └── debounce.ts
+└── styles/      # 縦書き・レイアウト・印刷 CSS
+    ├── app.css
+    ├── vertical.css
+    └── print.css
+
+tools/
+└── emaki-pdf.mjs  # 忠実 PDF CLI（Puppeteer）
 ```
 
 `core/` は Node でもブラウザでも動く純粋 TypeScript。`adapter/` は Web UI 固有の処理を担当する。この分離により将来 npm パッケージ・VSCode 拡張・CLI への再利用が容易になる。
@@ -101,6 +114,6 @@ MIT — Copyright (c) 2026 torifonium
 
 ---
 
-## GitHub Topics 案
+## GitHub Topics
 
 `japanese` `vertical-writing` `tategaki` `markdown` `typography`
