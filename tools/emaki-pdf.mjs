@@ -26,6 +26,7 @@ import puppeteer from 'puppeteer';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { markdownToHtml, isMarkdownPath } from './lib/md-to-html.mjs';
 
 function parseArgs(argv) {
   const args = { mode: 'emaki', paper: 'A5', line: 640, margin: 0, _: [] };
@@ -120,11 +121,20 @@ async function main() {
   }
 
   const abs = path.resolve(process.cwd(), input);
-  let html = await readFile(abs, 'utf8');
-  // 相対リソース解決のため <base> を付与（CSS/フォントがローカル相対の場合）
-  if (!/<base\s/i.test(html)) {
-    const baseHref = pathToFileURL(path.dirname(abs) + path.sep).href;
-    html = html.replace(/<head([^>]*)>/i, `<head$1><base href="${baseHref}">`);
+  let html;
+  if (isMarkdownPath(input)) {
+    // Markdown 入力: core で本文 HTML を生成して印刷向け CSS でラップ
+    html = await markdownToHtml(input, {
+      mode: args.mode === 'paged' ? 'book' : 'emaki',
+      paper: args.paper,
+    });
+  } else {
+    html = await readFile(abs, 'utf8');
+    // 相対リソース解決のため <base> を付与（CSS/フォントがローカル相対の場合）
+    if (!/<base\s/i.test(html)) {
+      const baseHref = pathToFileURL(path.dirname(abs) + path.sep).href;
+      html = html.replace(/<head([^>]*)>/i, `<head$1><base href="${baseHref}">`);
+    }
   }
 
   if (args.mode === 'paged') {

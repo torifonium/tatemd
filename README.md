@@ -43,19 +43,23 @@ URL を開くだけで縦書きプレビューが始まる。左ペインに Mar
 
 ヘッダの `A5` / `B6` ボタンで用紙サイズを選び、`印刷` ボタンでブラウザの印刷ダイアログから本文のみを PDF／印刷できる。絵巻物スタイルの長尺一枚 PDF は、ブラウザではベスト努力、忠実版は下記の CLI で出力する。
 
-### 忠実 PDF CLI（Puppeteer）
+### 忠実 PDF CLI
 
-`tools/emaki-pdf.mjs` は、用紙サイズを無視して**横にいくらでも長い 1 枚**の縦書き PDF を、文字を画像化せず（実テキストのまま）確実に生成する。
+ブラウザの印刷では縦書きを正しく複数ページに分割できないため、忠実な出力は CLI で行う。Web/拡張と同じ `core` を再利用し、**Markdown を直接入力**にできる（事前に `npm run build:cli` で core を CLI 向けに用意する）。文字は画像化しない（実テキストのまま）。
 
 ```bash
+npm run build:cli   # core を CLI 向けに用意（初回のみ）
+
+# 複数ページの「本」PDF（A5/B6・Vivliostyle）
+npm i -D @vivliostyle/cli
+node tools/book-pdf.mjs input.md book.pdf --paper A5
+
+# 用紙無視の「絵巻」長尺一枚 PDF（Puppeteer）
 npm i -D puppeteer
-# 絵巻（長尺一枚）
-node tools/emaki-pdf.mjs input.html output.pdf --mode emaki
-# ページ分割（A5/B6）
-node tools/emaki-pdf.mjs input.html output.pdf --mode paged --paper A5
+node tools/emaki-pdf.mjs input.md emaki.pdf --mode emaki
 ```
 
-> 現在の入力は HTML。Markdown を直接入力にする `core` 連携は [ROADMAP](ROADMAP.md) を参照。
+> `.html` を直接渡すこともできる。`@vivliostyle/cli` / `puppeteer` は任意依存（必要な CLI のときだけインストール）。
 
 ---
 

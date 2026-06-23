@@ -1,0 +1,19 @@
+{
+  // CLI（tools/*.mjs）から再利用するため core を Node 向け JS に emit する設定。
+  // 依存追加なし（既存 typescript の tsc を使う）。出力は dist-cli/（Git 管理外）。
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "lib": ["ES2020"],
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "declaration": false,
+    "noEmit": false,
+    "outDir": "dist-cli",
+    "rootDir": "src",
+    "types": ["node"]
+  },
+  "include": ["src/core/markdown.ts"]
+}

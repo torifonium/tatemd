@@ -21,8 +21,11 @@
  *      含むこと。@page の余白は HTML 側 CSS で調整可。
  */
 import { spawn } from 'node:child_process';
+import { writeFile, mkdtemp } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { markdownToHtml, isMarkdownPath } from './lib/md-to-html.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -44,19 +47,35 @@ if (!input) {
   process.exit(1);
 }
 
-const bin = path.resolve(here, '..', 'node_modules', '.bin', 'vivliostyle');
-const cmdArgs = [
-  'build',
-  path.resolve(process.cwd(), input),
-  '-o',
-  path.resolve(process.cwd(), output),
-  '-s',
-  args.paper, // A5 / B6(=JIS-B6 ではなく B5/B4 プリセット。B6 はカスタム指定で対応可)
-  '-d', // single HTML document
-];
+async function main() {
+  // Markdown 入力なら core で HTML 化して一時ファイルに書き出し、それを入力にする
+  let inputPath = path.resolve(process.cwd(), input);
+  if (isMarkdownPath(input)) {
+    const html = await markdownToHtml(input, { mode: 'book', paper: args.paper });
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'tatemd-book-'));
+    inputPath = path.join(dir, 'index.html');
+    await writeFile(inputPath, html, 'utf8');
+  }
 
-const child = spawn(bin, cmdArgs, { stdio: 'inherit' });
-child.on('exit', (code) => {
-  if (code === 0) console.log(`生成完了: ${output} (paper=${args.paper})`);
-  process.exit(code ?? 1);
+  const bin = path.resolve(here, '..', 'node_modules', '.bin', 'vivliostyle');
+  const cmdArgs = [
+    'build',
+    inputPath,
+    '-o',
+    path.resolve(process.cwd(), output),
+    '-s',
+    args.paper, // A5 / B5 等のプリセット。B6 はカスタム指定（128mm,182mm）で対応可
+    '-d', // single HTML document
+  ];
+
+  const child = spawn(bin, cmdArgs, { stdio: 'inherit' });
+  child.on('exit', (code) => {
+    if (code === 0) console.log(`生成完了: ${output} (paper=${args.paper})`);
+    process.exit(code ?? 1);
+  });
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });
