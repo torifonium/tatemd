@@ -94,7 +94,7 @@ feat(core): add ruby token parser interface
 MVP-1 では未結線（設計余地のみ）。
 ```
 
-**重要: コミットメッセージに Claude / Anthropic への帰属（`Co-Authored-By: Claude ...`、`Generated with Claude Code` 等）を入れないでください。**
+**コミットの帰属について:** メンテナ自身は AI ツールの帰属行（`Co-Authored-By: Claude ...`、`Generated with Claude Code` 等）をコミットに**入れない方針**ですが、これはあくまで個人の慣習です。**貢献者の皆さんは、自分のコミットに使用ツールの帰属を入れても入れなくても構いません**（強制も禁止もしません）。
 
 ---
 
