@@ -56,10 +56,6 @@
   "dependencies": {
     "markdown-it": "^14.1.0"
   },
-  "optionalDependencies": {
-    "puppeteer": "^23.0.0",
-    "@vivliostyle/cli": "^8.0.0"
-  },
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.16.10",
