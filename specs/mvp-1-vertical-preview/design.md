@@ -246,10 +246,13 @@ export function exportPdf(mode: PdfMode, paper: PaperSize): void;
 ### 配信経路（OSS・2経路）
 絵巻（長尺一枚）を「実テキストのまま確実に 1 枚」にするのは、ブラウザの印刷ダイアログ経由（`window.print()` + `@page`）では保証しづらい。そこで OSS として 2 経路で提供する。core が DOM 非依存（NFR Portability）なので、両経路で同じ `renderToTypesettingHtml` と縦書き CSS を再利用し、二重実装を避ける。
 
-| 経路 | 実装 | 絵巻PDF | テキスト | 前提 |
+| 経路 | 実装 | 出力 | テキスト | 前提 |
 |------|------|---------|----------|------|
-| **静的 Web アプリ**（本体・デモ） | `adapter/pdfExport.ts` + `window.print()` | print ベスト努力（Chrome で概ね 1 枚） | 選択可 | 無インストール |
-| **CLI**（`tools/emaki-pdf.mjs`・任意） | Puppeteer（ヘッドレス Chrome）の `page.pdf({ width, height })` | 実寸測定 → **確実に 1 枚** | 選択可 | Node 実行 |
+| **静的 Web アプリ**（本体・デモ） | `adapter/pdfExport.ts` + `window.print()` | ページ印刷=ベスト努力（**縦書きの複数ページ送りは不可**＝プレビュー/短文向け）/ 絵巻=ベスト努力 | 選択可 | 無インストール |
+| **CLI 絵巻**（`tools/emaki-pdf.mjs`・任意） | Puppeteer の `page.pdf({ width, height })` | 実寸測定 → 用紙無視の**横長1枚（絵巻）** | 選択可 | Node 実行 |
+| **CLI 本**（`tools/book-pdf.mjs`・任意） | **Vivliostyle**（`@vivliostyle/cli`） | A5/B6 の**複数ページに正しく分割した縦書き本** | 選択可 | Node 実行 |
+
+> **重要な制約**: ブラウザの印刷エンジン（`window.print()` も生 Puppeteer `page.pdf` も同じ）は **縦書き(vertical-rl)を複数ページに分割できない**（列が1ページ幅を超えるとクリップされる）。本らしい複数ページ本は **CSS 組版エンジン Vivliostyle** でのみ確実に出せる。よって「忠実な本」は CLI（Vivliostyle）の責務、絵巻（1枚）は Puppeteer、Web は best-effort と住み分ける。
 
 - CLI の絵巻ロジック: 行長(`LINE_LEN`)を固定し、行が積まれる方向(横)の総延長を実測 → `page.pdf({ width: 実測幅, height: 行長 })`。ページ寸法を PDF API で直接指定するため、印刷ダイアログの用紙・分割の癖を受けない。
 - CLI は将来 `core` の npm 公開（配布チャネル④）と統合し、`markdown → 忠実 PDF` の power-user ツールにできる。
