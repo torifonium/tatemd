@@ -11,7 +11,7 @@ module.exports = {
     // 意図的に含めるため、文字列内の不規則空白は許可する。
     'no-irregular-whitespace': ['error', { skipStrings: true, skipTemplates: true }],
   },
-  ignorePatterns: ['dist', 'node_modules', 'proto'],
+  ignorePatterns: ['dist', 'node_modules', 'proto', 'vscode-extension'],
   overrides: [
     {
       // core/ は DOM 非依存の純粋関数のみ（NFR Portability: npm/VSCode 再利用の前提）。

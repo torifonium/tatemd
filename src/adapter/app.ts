@@ -55,6 +55,7 @@ export function initApp(): void {
   const divider = document.querySelector<HTMLElement>('.pane-divider');
   const paperBtns = document.querySelectorAll<HTMLButtonElement>('.paper-btn[data-size]');
   const printBtn = document.querySelector<HTMLButtonElement>('.print-btn');
+  const previewPane = document.querySelector<HTMLElement>('.preview-pane');
 
   // 必須 DOM が無ければ起動しない
   if (!textarea || !tategaki || !container || !divider) {
@@ -99,10 +100,36 @@ export function initApp(): void {
     });
   }
 
+  // --- 編集位置 → プレビュー スクロール同期 ---
+  // キャレット位置に対応するプレビューのブロックが画面外なら、その位置へ寄せる。
+  // 既に見えている場合は動かさない（タイプ中に画面が揺れないように）。
+  const syncPreviewToCaret = (): void => {
+    if (!previewPane) return;
+    const blocks = tategaki.children;
+    if (blocks.length === 0) return;
+    const len = textarea.value.length || 1;
+    const ratio = Math.min(1, Math.max(0, textarea.selectionStart / len));
+    const idx = Math.min(blocks.length - 1, Math.floor(ratio * blocks.length));
+    const target = blocks[idx] as HTMLElement;
+    const pane = previewPane.getBoundingClientRect();
+    const t = target.getBoundingClientRect();
+    const visible =
+      t.left < pane.right && t.right > pane.left && t.top < pane.bottom && t.bottom > pane.top;
+    if (!visible && typeof target.scrollIntoView === 'function') {
+      // 縦書きプレビューは横方向にスクロールする（inline 軸＝水平）
+      try {
+        target.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+      } catch {
+        // jsdom 等 scrollIntoView 未対応環境では無視
+      }
+    }
+  };
+
   // --- 入力結線（editor → preview / storage）---
-  // プレビュー更新: 150ms デバウンス
+  // プレビュー更新: 150ms デバウンス（更新後にキャレット位置へ追従）
   const debouncedPreview = debounce((md: string) => {
     updatePreview(tategaki, md);
+    syncPreviewToCaret();
   }, 150);
 
   // 保存: 500ms デバウンス
@@ -114,6 +141,11 @@ export function initApp(): void {
     debouncedPreview(value);
     debouncedSave(value);
   });
+
+  // キャレット移動（テキスト変更なし）でもプレビューを追従させる
+  const debouncedCaretSync = debounce(syncPreviewToCaret, 120);
+  textarea.addEventListener('keyup', debouncedCaretSync);
+  textarea.addEventListener('click', debouncedCaretSync);
 
   // --- スプリッター（main.ts から移設）---
   initSplitter(container, divider, {
