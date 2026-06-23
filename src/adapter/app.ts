@@ -11,6 +11,7 @@ import { initEditor } from './editor';
 import { loadManuscript, saveManuscript } from './storage';
 import { type PaperSize } from './storage';
 import { applyPaperSize, initPaperSize } from './paperSize';
+import { exportEmaki } from './pdfExport';
 import { debounce } from './debounce';
 import { initSplitter } from './splitter';
 
@@ -55,6 +56,7 @@ export function initApp(): void {
   const divider = document.querySelector<HTMLElement>('.pane-divider');
   const paperBtns = document.querySelectorAll<HTMLButtonElement>('.paper-btn[data-size]');
   const printBtn = document.querySelector<HTMLButtonElement>('.print-btn');
+  const scrollBtn = document.querySelector<HTMLButtonElement>('.scroll-btn');
   const previewPane = document.querySelector<HTMLElement>('.preview-pane');
 
   // 必須 DOM が無ければ起動しない
@@ -97,6 +99,13 @@ export function initApp(): void {
   if (printBtn) {
     printBtn.addEventListener('click', () => {
       window.print();
+    });
+  }
+
+  // --- 長尺ボタン ---
+  if (scrollBtn) {
+    scrollBtn.addEventListener('click', () => {
+      exportEmaki();
     });
   }
 

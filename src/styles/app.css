@@ -103,6 +103,38 @@ body {
   border-left: 1px solid #c8c8c8;
 }
 
+/* 長尺（絵巻）ボタン */
+.scroll-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #7a9a7a;
+  border-radius: 4px;
+  background-color: #3a6b3a;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.scroll-btn:hover {
+  background-color: #4a7a4a;
+  border-color: #5aaa5a;
+}
+
+.scroll-btn:active {
+  background-color: #2a5a2a;
+}
+
+.scroll-btn:disabled {
+  background-color: #555555;
+  border-color: #666666;
+  color: #999999;
+  cursor: default;
+}
+
 /* --------------------------------------------------------------------------
    メインエリア — CSS Grid 2カラム
    左: textarea.editor  /  右: section.preview-pane

@@ -50,11 +50,42 @@
     overflow: visible;
   }
 
-  body[data-paper="a5"] .tategaki {
+  /* 用紙別 inline-size は長尺モードに干渉しないよう :not で限定 */
+  body[data-paper="a5"]:not([data-pdf-mode="scroll"]) .tategaki {
     inline-size: 180mm; /* A5 高さ 210mm − 余白 15mm×2 */
   }
 
-  body[data-paper="b6"] .tategaki {
+  body[data-paper="b6"]:not([data-pdf-mode="scroll"]) .tategaki {
     inline-size: 152mm; /* B6 高さ 182mm − 余白 15mm×2 */
+  }
+
+  /* --------------------------------------------------------------------------
+     長尺（絵巻）モード: body[data-pdf-mode="scroll"]
+     JS が inline style で .tategaki の width/height を設定するため、
+     ここでは余白の除去と overflow の解除のみを担う。
+     -------------------------------------------------------------------------- */
+  html:has(body[data-pdf-mode="scroll"]),
+  body[data-pdf-mode="scroll"] {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body[data-pdf-mode="scroll"] .app-main,
+  body[data-pdf-mode="scroll"] .preview-pane {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  body[data-pdf-mode="scroll"] .tategaki {
+    break-inside: avoid;
+    page-break-inside: avoid; /* Firefox 旧形式 */
+    overflow: visible;
+    /* 寸法は JS が inline style で設定する */
+  }
+
+  body[data-pdf-mode="scroll"] .tategaki p {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
