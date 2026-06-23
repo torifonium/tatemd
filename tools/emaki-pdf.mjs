@@ -52,22 +52,29 @@ async function exportEmaki(html, outPath, lineLenPx) {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
-    // 行長を固定し、行が積まれる方向(横)の総延長を測る
-    const widthPx = await page.evaluate((lineLen) => {
+    // 行長を固定して列に折り返させ、ページ全体の実寸(幅・高さ)を測る。
+    // 高さは padding/margin 込みの実寸(scrollHeight)を使う。
+    // LINE_LEN を高さ決め打ちにすると padding 分だけ行末(列の下端)が切れるため。
+    const dims = await page.evaluate((lineLen) => {
       const el = document.querySelector('.tategaki') || document.body;
       el.style.height = lineLen + 'px';
       el.style.width = 'auto';
       el.style.overflow = 'visible';
       // レイアウト確定
       void el.offsetWidth;
-      return Math.ceil(el.scrollWidth);
+      const de = document.documentElement;
+      const body = document.body;
+      return {
+        width: Math.ceil(Math.max(de.scrollWidth, body.scrollWidth)),
+        height: Math.ceil(Math.max(de.scrollHeight, body.scrollHeight)),
+      };
     }, lineLenPx);
 
-    const slack = Math.ceil(widthPx * 0.02) + 16; // 横方向の保険
+    const slackW = Math.ceil(dims.width * 0.02) + 16; // 横方向の保険
     await page.pdf({
       path: outPath,
-      width: `${widthPx + slack}px`,
-      height: `${lineLenPx}px`,
+      width: `${dims.width + slackW}px`,
+      height: `${dims.height + 2}px`, // 実測の全高（padding 等を含む）で切れを防ぐ
       printBackground: true,
       pageRanges: '1',
       margin: { top: '0', right: '0', bottom: '0', left: '0' },
