@@ -110,6 +110,12 @@
   - Done when: 印刷プレビューで本文のみ・A5/B6 反映・縦書き維持・複数ページ送りが Chrome/Safari/Firefox で確認できる。
   - Depends on: Task 3.1, Task 0.1
 
+- [ ] **Task 3.4**: 忠実 PDF CLI（Puppeteer・絵巻/ページ分割）
+  - What: `tools/emaki-pdf.mjs`（実装済みプロト）を `core`（`renderToTypesettingHtml`）＋縦書き CSS と結線し、`markdown → 忠実 PDF`（モード② 実寸1枚 / モード① A5・B6）にする。puppeteer は任意（dev/optional）依存。README に使い方を記載。
+  - Files: `tools/emaki-pdf.mjs`, `package.json`, `README.md`
+  - Done when: ローカルで `node tools/emaki-pdf.mjs` から実テキストの絵巻 PDF（確実に 1 枚）とページ分割 PDF が生成できる。
+  - Depends on: Task 1.2（core）, Task 2.5（縦書き CSS）
+
 - [ ] **Task 3.3**: PDF エクスポート（2モード・FR-008 / US-007）
   - What: `adapter/pdfExport.ts` を実装。`exportPdf(mode, paper)` で、モード①は `@page{size:A5/B6}` のまま `window.print()`、モード②は `.tategaki` を実測して `@page{size:幅×高}`＋改ページ抑止に差し替えて `window.print()`、`afterprint` で復帰。ヘッダに「長尺（縦巻）」選択を追加し（index.html / app.css）、`PDF/印刷` ボタンと結線。文字はラスタライズしない。
   - Files: `src/adapter/pdfExport.ts`, `src/adapter/app.ts`, `index.html`, `src/styles/app.css`, `src/styles/print.css`

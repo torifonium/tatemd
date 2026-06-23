@@ -243,6 +243,18 @@ export function exportPdf(mode: PdfMode, paper: PaperSize): void;
 - どちらのモードでも印刷対象は `.tategaki` のみ（「印刷」節の本文抽出を共用）。`@media print` の Grid 解除・overflow 解除が前提。
 - 文字の選択可能性を壊さないため、html2canvas/jsPDF 等のラスタライズ系は採用しない。
 
+### 配信経路（OSS・2経路）
+絵巻（長尺一枚）を「実テキストのまま確実に 1 枚」にするのは、ブラウザの印刷ダイアログ経由（`window.print()` + `@page`）では保証しづらい。そこで OSS として 2 経路で提供する。core が DOM 非依存（NFR Portability）なので、両経路で同じ `renderToTypesettingHtml` と縦書き CSS を再利用し、二重実装を避ける。
+
+| 経路 | 実装 | 絵巻PDF | テキスト | 前提 |
+|------|------|---------|----------|------|
+| **静的 Web アプリ**（本体・デモ） | `adapter/pdfExport.ts` + `window.print()` | print ベスト努力（Chrome で概ね 1 枚） | 選択可 | 無インストール |
+| **CLI**（`tools/emaki-pdf.mjs`・任意） | Puppeteer（ヘッドレス Chrome）の `page.pdf({ width, height })` | 実寸測定 → **確実に 1 枚** | 選択可 | Node 実行 |
+
+- CLI の絵巻ロジック: 行長(`LINE_LEN`)を固定し、行が積まれる方向(横)の総延長を実測 → `page.pdf({ width: 実測幅, height: 行長 })`。ページ寸法を PDF API で直接指定するため、印刷ダイアログの用紙・分割の癖を受けない。
+- CLI は将来 `core` の npm 公開（配布チャネル④）と統合し、`markdown → 忠実 PDF` の power-user ツールにできる。
+- 本体（静的 Web アプリ）の「サーバー不要・完全クライアントサイド・外部送信なし」は不変。CLI はローカル実行で、原稿を外部に送らない。
+
 ## Error Handling
 
 - **LocalStorage 読み書き失敗（無効化・容量超過・SecurityError）**: try/catch で握りつぶし、メモリ上の状態で編集・プレビュー継続（FR-005）。保存不可時もクラッシュさせない。
