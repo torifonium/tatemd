@@ -62,6 +62,12 @@ describe('initApp()', () => {
     expect(tategaki!.innerHTML.length).toBeGreaterThan(0);
   });
 
+  // B-1 退行防止: core はラッパを返さないので .tategaki は常に 1 つ（二重ラップしない）
+  it('.tategaki は二重にならず 1 つだけ', () => {
+    initApp();
+    expect(document.querySelectorAll('.tategaki').length).toBe(1);
+  });
+
   it('textarea に input を発火すると 150ms 後に .tategaki が更新される', async () => {
     vi.useFakeTimers();
     initApp();

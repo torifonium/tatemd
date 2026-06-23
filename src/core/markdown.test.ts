@@ -3,16 +3,17 @@ import { describe, it, expect } from 'vitest';
 import { renderToTypesettingHtml } from './markdown';
 
 describe('renderToTypesettingHtml', () => {
-  // 出力が .tategaki ラッパで始まることを確認
-  it('出力が <div class="tategaki"> で始まる', () => {
+  // ラッパ(.tategaki)を付けず本文 HTML を返す（.tategaki はホスト側が単一所有）
+  it('ラッパ(.tategaki)を付けず本文 HTML を返す', () => {
     const html = renderToTypesettingHtml('テスト');
-    expect(html).toMatch(/^<div class="tategaki">/);
+    expect(html).not.toContain('class="tategaki"');
+    expect(html).toContain('テスト');
   });
 
-  // 空文字でも例外を投げず .tategaki ラッパを返す
-  it('空文字入力でも例外を投げず .tategaki ラッパを返す', () => {
+  // 空文字でも例外を投げず空文字を返す
+  it('空文字入力でも例外を投げず空文字を返す', () => {
     expect(() => renderToTypesettingHtml('')).not.toThrow();
-    expect(renderToTypesettingHtml('')).toContain('<div class="tategaki">');
+    expect(renderToTypesettingHtml('')).toBe('');
   });
 
   // 見出しレベル: # → h1、### → h3
@@ -118,7 +119,7 @@ describe('renderToTypesettingHtml', () => {
   // 空白のみ入力でも例外を投げない
   it('空白のみ入力でも例外を投げない', () => {
     expect(() => renderToTypesettingHtml('   \n  \t ')).not.toThrow();
-    expect(renderToTypesettingHtml('   \n  ')).toMatch(/^<div class="tategaki">/);
+    expect(typeof renderToTypesettingHtml('   \n  ')).toBe('string');
   });
 
   // --- Tier 境界: Tier 2/3 記法は Tier 1 では描画されない（無効化の意図を固定）---

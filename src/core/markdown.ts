@@ -22,13 +22,13 @@ md.disable([
 ]);
 
 /**
- * Markdown 文字列を組版用 HTML 文字列に変換する。
- * 出力全体を `<div class="tategaki">…</div>` でラップして返す。
+ * Markdown 文字列を組版用 HTML 文字列（本文のみ）に変換する。
+ * 縦書きコンテナ `.tategaki` はホスト側（index.html / adapter）が単一所有するため、
+ * ここではラッパを付けず本文 HTML だけを返す（二重 `.tategaki` を避ける）。
  *
  * @param markdown - 変換対象の Markdown 文字列
- * @returns 組版用 HTML 文字列
+ * @returns 組版用 HTML 文字列（`.tategaki` の中身として差し込む）
  */
 export function renderToTypesettingHtml(markdown: string): string {
-  const inner = md.render(markdown);
-  return `<div class="tategaki">${inner}</div>`;
+  return md.render(markdown);
 }

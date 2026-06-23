@@ -132,7 +132,7 @@ interface RubyToken { base: string; ruby: string; }
 - **Tier 2（実装するが縦書き破綻なら除外）**: link/image。レンダリング後に縦書き表示を実機確認し、破綻するものは ROADMAP へ。
   - **URL スキーム無害化（P2指摘反映）**: link/image を有効化したら、`href`/`src` の `javascript:`・`data:`（画像以外）等の危険スキームを除去する markdown-it の `validateLink` を設定する。`html:false` だけでは属性経由の XSS（`javascript:` リンク）を防げないため。
 - **Tier 3（Tier 2 成功時のみ）**: code block/table。
-- 出力ラッパ: 本文全体を **`<div class="tategaki">…</div>` でラップ（クラス名確定）**。CSS の適用起点・印刷の抽出対象を兼ねる。
+- **`.tategaki` の単一所有**: 縦書きコンテナ `<div class="tategaki">` は **index.html（`.preview-pane > .tategaki`）が唯一所有**する。core は**ラッパを付けず本文 HTML のみ**を返し、adapter がそれを `.tategaki.innerHTML` に差し込む。core 側でラップすると `.tategaki` が二重になり、縦書き CSS（`:first-child`・height・writing-mode 入れ子）と印刷/PDF の実測が崩れるため禁止。`.tategaki` が CSS 適用起点・印刷抽出対象を兼ねる。
 - **段落と改行の扱い（P1指摘反映）**: `breaks:true` により本文中の単一改行は `<br>`、空行区切りは `<p>` 段落となり、二重の改行表現が共存する。縦書きで「段落アキ」と「`<br>` 行送り」が視覚的に揃うよう、段落の字下げは CSS（`.tategaki p { text-indent: 1em }` 等）で最小補正する（組版表現＝CSS 責務の範囲内）。core 側では補正しない。
 - **core では禁則・約物詰め・縦中横・ルビを一切処理しない**（CSS 責務 / スコープ外）。
 
