@@ -1,0 +1,145 @@
+/* ==========================================================================
+   vertical.css — 縦書き組版スタイル
+   レイアウト・UI は app.css の責務。ここでは writing-mode 等の組版のみ扱う。
+   第一対象: Chrome / Safari / Firefox。Chrome 専用プロパティは使わない。
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   縦書きコンテナ
+   -------------------------------------------------------------------------- */
+.tategaki {
+  /* 縦書き基本設定 */
+  writing-mode: vertical-rl;
+  text-orientation: mixed;     /* 英数字は自然な向きで整列（縦中横なし） */
+  line-break: strict;          /* 禁則処理はブラウザ委譲 */
+  text-align: justify;         /* 均等割り付け（ベストエフォート） */
+
+  /* 本文フォント（明朝系優先） */
+  font-family: "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho",
+    "YuMincho", "ヒラギノ明朝 ProN", "游明朝", serif;
+
+  /* 本らしい初期値 */
+  font-size: 1rem;
+  line-height: 2;
+  letter-spacing: 0.05em;
+
+  /* 縦書きで行が右から左へ流れるため、横スクロールで読み進める */
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   段落
+   -------------------------------------------------------------------------- */
+.tategaki p {
+  /* 段落先頭字下げ */
+  text-indent: 1em;
+  /* 縦書きでの段落間アキ（inline 方向 = 横方向）。控えめな値で本らしさを保つ */
+  margin-inline-start: 1.5em;
+}
+
+/* 先頭段落は段落アキなし（本文開始点） */
+.tategaki p:first-child {
+  margin-inline-start: 0;
+}
+
+/* --------------------------------------------------------------------------
+   見出し（縦書きで破綻しない最小限の調整）
+   -------------------------------------------------------------------------- */
+.tategaki h1,
+.tategaki h2,
+.tategaki h3,
+.tategaki h4,
+.tategaki h5,
+.tategaki h6 {
+  font-weight: bold;
+  text-indent: 0;
+  margin-inline-start: 2em;
+  margin-inline-end: 0.5em;
+}
+
+.tategaki h1 { font-size: 1.4em; letter-spacing: 0.1em; }
+.tategaki h2 { font-size: 1.2em; letter-spacing: 0.1em; }
+.tategaki h3 { font-size: 1.1em; }
+.tategaki h4,
+.tategaki h5,
+.tategaki h6 { font-size: 1em; }
+
+/* --------------------------------------------------------------------------
+   引用（blockquote）
+   -------------------------------------------------------------------------- */
+.tategaki blockquote {
+  margin-inline: 1.5em;
+  padding-inline-start: 1em;
+  border-inline-start: 3px solid #c0c0c0;
+  color: #555;
+  font-style: normal; /* 縦書きで italic は崩れやすいため無効化 */
+}
+
+/* --------------------------------------------------------------------------
+   リスト（ul / ol）
+   -------------------------------------------------------------------------- */
+.tategaki ul,
+.tategaki ol {
+  /* 縦書きではリストマーカーの配置が崩れやすいため最小調整 */
+  margin-inline-start: 1.5em;
+  padding-inline-start: 1em;
+  list-style-position: inside;
+}
+
+.tategaki li {
+  text-indent: 0;
+}
+
+/* --------------------------------------------------------------------------
+   区切り線（hr）
+   -------------------------------------------------------------------------- */
+.tategaki hr {
+  /* 縦書きでは hr は水平線ではなく縦線になる */
+  border: none;
+  border-inline-start: 1px solid #aaa;
+  /* 高さで線の長さを指定 */
+  block-size: 5em;
+  margin-inline: 1.5em;
+}
+
+/* --------------------------------------------------------------------------
+   インラインコード（縦書き内で最低限読める程度に）
+   -------------------------------------------------------------------------- */
+.tategaki code {
+  font-family: "SFMono-Regular", "Menlo", "Consolas", monospace;
+  font-size: 0.85em;
+  background-color: #f0f0f0;
+  padding: 0.1em 0.2em;
+  border-radius: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   コードブロック（pre > code）
+   -------------------------------------------------------------------------- */
+.tategaki pre {
+  margin-inline: 1em;
+  overflow-y: auto; /* 縦書きコンテキストでは inline 方向が縦になる */
+}
+
+.tategaki pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 0.85em;
+}
+
+/* --------------------------------------------------------------------------
+   強調
+   -------------------------------------------------------------------------- */
+.tategaki em {
+  /* italic は縦書きで崩れることがあるため font-style は維持しつつ letter-spacing で補正 */
+  font-style: normal;
+  /* 傍点代わりにテキスト装飾（対応ブラウザでのみ有効） */
+  text-emphasis: dot;
+  text-emphasis-position: right;
+}
+
+.tategaki strong {
+  font-weight: bold;
+}
