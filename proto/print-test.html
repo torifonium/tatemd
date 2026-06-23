@@ -198,7 +198,18 @@
         inline-size: 128mm;
       }
 
-      /* モード② 長尺: 改ページを強制抑止 */
+      /* モード② 長尺: ページ box ぴったりに本文だけを置く（余白0の @page と一致） */
+      html:has(body[data-pdf-mode="scroll"]),
+      body[data-pdf-mode="scroll"] {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      body[data-pdf-mode="scroll"] .app-main,
+      body[data-pdf-mode="scroll"] .preview-pane {
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+      }
       body[data-pdf-mode="scroll"] .tategaki {
         break-inside: avoid;
         page-break-inside: avoid; /* Firefox 旧形式 */
@@ -371,43 +382,50 @@
       // scrollWidth が実際のコンテンツ幅を返す。
       const tategaki = document.getElementById('tategaki-content');
 
-      // 画面上の overflow を一時的に解除して正確な scrollWidth を得る
-      const prevOverflowX = tategaki.style.overflowX;
-      const prevOverflowY = tategaki.style.overflowY;
-      tategaki.style.overflowX = 'visible';
-      tategaki.style.overflowY = 'visible';
+      // 画面の .tategaki の高さ(行長)は viewport 依存なので、そのまま測ると
+      // 印刷レイアウトと大きくズレて余分なページが出る。そこで「行長」を固定値にし、
+      // 同条件のクローンを画面外に置いて横方向の総延長(scrollWidth)だけを測る。
+      const LINE_LEN_PX = 640; // 1 行(=縦の列)の長さ = 長尺1枚の高さ（固定・決定的）
 
-      // レイアウト強制再計算
+      const clone = tategaki.cloneNode(true);
+      clone.id = '';
+      clone.style.position = 'absolute';
+      clone.style.left = '-100000px';
+      clone.style.top = '0';
+      clone.style.visibility = 'hidden';
+      clone.style.height = LINE_LEN_PX + 'px';
+      clone.style.width = 'auto';
+      clone.style.overflow = 'visible';
+      document.body.appendChild(clone);
+      // レイアウト確定
       // eslint-disable-next-line no-unused-expressions
-      tategaki.offsetWidth;
+      clone.offsetWidth;
+      const contentW = clone.scrollWidth; // 行が積まれる方向(横)の総延長
+      document.body.removeChild(clone);
 
-      const contentW = tategaki.scrollWidth;  // 列の総延長（横幅）
-      const contentH = tategaki.scrollHeight; // 列の高さ（縦高）
+      // 横スラック（印刷再レイアウトの誤差吸収。やや大きめ）
+      const SLACK_W = Math.ceil(contentW * 0.05) + 24;
+      const boxW = contentW + SLACK_W;
+      const boxH = LINE_LEN_PX;
 
-      // overflow を元に戻す
-      tategaki.style.overflowX = prevOverflowX;
-      tategaki.style.overflowY = prevOverflowY;
-
-      // ページ寸法 = コンテンツ寸法 + 余白
-      const pageW = contentW + SCROLL_MARGIN_PX * 2; // px
-      const pageH = contentH + SCROLL_MARGIN_PX * 2; // px
+      // px → mm（@page は mm 指定の方が Chrome が用紙寸法として honor しやすい）
+      const PX_TO_MM = 25.4 / 96;
+      const pageWmm = (boxW * PX_TO_MM).toFixed(1);
+      const pageHmm = (boxH * PX_TO_MM).toFixed(1);
 
       // 寸法を画面に表示（デバッグ用）
-      info.textContent = `実測: ${contentW}×${contentH}px → @page ${pageW}×${pageH}px`;
+      info.textContent = `実測 横${contentW}px → 1枚 ${pageWmm}×${pageHmm}mm`;
       info.classList.add('visible');
 
       // --- 手順 2: @page を長尺サイズに差し替え + 印刷モード属性を設定 ---
-      // body[data-pdf-mode="scroll"] を付与 → CSS の break-inside:avoid が有効になる
       document.body.dataset.pdfMode = 'scroll';
 
-      // .tategaki の印刷時サイズを inline style で指定
-      // （縦書きなので width=列総延長, height=列高 をそのまま設定）
-      tategaki.style.width  = contentW + 'px';
-      tategaki.style.height = contentH + 'px';
+      // .tategaki をページ box ぴったりに固定（margin:0 の @page と一致させる）
+      tategaki.style.width  = boxW + 'px';
+      tategaki.style.height = boxH + 'px';
 
-      setPrintPageStyle(
-        `@page { size: ${pageW}px ${pageH}px; margin: ${SCROLL_MARGIN_PX}px; }`
-      );
+      // 用紙サイズを無視した「横にいくらでも長い 1 枚」: mm 指定 + 余白 0
+      setPrintPageStyle(`@page { size: ${pageWmm}mm ${pageHmm}mm; margin: 0; }`);
 
       // --- 手順 3: 印刷 ---
       btn.disabled = true;
