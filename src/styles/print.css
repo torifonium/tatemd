@@ -36,25 +36,25 @@
   }
 
   /* --------------------------------------------------------------------------
-     縦書き本文: 画面用の高さ/overflow を解除
-     writing-mode は vertical.css のまま保持（ここでは再宣言しない）
+     縦書き本文の組版（複数ページ送り）
+     writing-mode は vertical.css のまま保持（ここでは再宣言しない）。
+     縦書きの論理軸に注意: inline-size = 縦（行長） / block-size = 横（列が積まれる方向）。
+     - inline-size を用紙の高さ−余白に合わせて、行が 1 ページ分の長さで折り返す。
+     - block-size は固定せず auto。列が積まれて 1 ページ幅を超えたら次ページへ送る
+       （ここを 148mm 等で固定すると 1 ページで頭打ちになり残りが切れる）。
+     @page { size } は paperSize.ts 担当。Safari で size が無視されても行長が用紙高に
+     合っていれば概ね破綻しない（Chrome 第一対象・ベスト努力）。
      -------------------------------------------------------------------------- */
   .tategaki {
-    height: auto;
+    block-size: auto; /* 横（列の積み）方向は伸ばし、ページをまたいで流す */
     overflow: visible;
   }
 
-  /* --------------------------------------------------------------------------
-     Safari 実寸フォールバック（@page { size } 無視対策）
-     縦書きなので block-size = 紙の長辺、inline-size = 紙の短辺
-     -------------------------------------------------------------------------- */
   body[data-paper="a5"] .tategaki {
-    block-size: 210mm;
-    inline-size: 148mm;
+    inline-size: 180mm; /* A5 高さ 210mm − 余白 15mm×2 */
   }
 
   body[data-paper="b6"] .tategaki {
-    block-size: 182mm;
-    inline-size: 128mm;
+    inline-size: 152mm; /* B6 高さ 182mm − 余白 15mm×2 */
   }
 }
