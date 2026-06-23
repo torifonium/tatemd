@@ -135,8 +135,10 @@
 .tategaki em {
   /* italic は縦書きで崩れることがあるため font-style は維持しつつ letter-spacing で補正 */
   font-style: normal;
-  /* 傍点代わりにテキスト装飾（対応ブラウザでのみ有効） */
+  /* 傍点代わりにテキスト装飾（Safari は -webkit- 接頭辞が要る。対応ブラウザでのみ有効） */
+  -webkit-text-emphasis: dot;
   text-emphasis: dot;
+  -webkit-text-emphasis-position: right;
   text-emphasis-position: right;
 }
 

@@ -69,7 +69,8 @@ export function initApp(): void {
 
   // --- 用紙サイズ初期化 ---
   // storage から復元し、body[data-paper] と @page { size } に反映する。
-  initPaperSize();
+  // 適用済みサイズを単一情報源として受け取る。
+  const initialSize = initPaperSize();
 
   // 現在の用紙サイズに合わせてボタンの aria-pressed を揃える
   const syncPaperBtns = (active: PaperSize): void => {
@@ -79,9 +80,6 @@ export function initApp(): void {
     });
   };
 
-  // initPaperSize が返す値を使って初期 aria 状態を反映
-  // （initPaperSize は body.dataset.paper を更新済みなので、そこから読む）
-  const initialSize = (document.body.dataset.paper ?? 'a5') as PaperSize;
   syncPaperBtns(initialSize);
 
   // --- 用紙サイズ切替ボタン ---
