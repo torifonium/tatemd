@@ -8,33 +8,12 @@
 import { renderToTypesettingHtml } from '../core/markdown';
 import { SAMPLE_MANUSCRIPT } from '../core/sampleManuscript';
 import { initEditor } from './editor';
-import { loadManuscript, saveManuscript } from './storage';
+import { loadManuscript, saveManuscript, loadSplit, saveSplit } from './storage';
 import { type PaperSize } from './storage';
 import { applyPaperSize, initPaperSize } from './paperSize';
 import { exportEmaki } from './pdfExport';
 import { debounce } from './debounce';
 import { initSplitter } from './splitter';
-
-// スプリッター位置を保存する LocalStorage キー（main.ts から移設）
-const SPLIT_KEY = 'tatemd.split.v1';
-
-function loadSplit(): number | null {
-  try {
-    const v = localStorage.getItem(SPLIT_KEY);
-    const n = v == null ? NaN : parseFloat(v);
-    return Number.isFinite(n) ? n : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveSplit(px: number): void {
-  try {
-    localStorage.setItem(SPLIT_KEY, String(Math.round(px)));
-  } catch {
-    // localStorage 不可でも無視（操作は継続）
-  }
-}
 
 /**
  * プレビュー DOM (.tategaki) を更新する。

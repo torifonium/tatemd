@@ -5,6 +5,8 @@ import {
   saveManuscript,
   loadPaperSize,
   savePaperSize,
+  loadSplit,
+  saveSplit,
 } from './storage';
 
 afterEach(() => {
@@ -86,5 +88,49 @@ describe('savePaperSize', () => {
       throw new Error('容量超過');
     });
     expect(() => savePaperSize('a5')).not.toThrow();
+  });
+});
+
+describe('loadSplit', () => {
+  it('未保存時は null を返す', () => {
+    expect(loadSplit()).toBeNull();
+  });
+
+  it('save→load で同じ値（整数）が得られる', () => {
+    saveSplit(320);
+    expect(loadSplit()).toBe(320);
+  });
+
+  it('saveSplit は px を Math.round した文字列で保存する', () => {
+    saveSplit(320.7);
+    // Math.round(320.7) = 321
+    expect(loadSplit()).toBe(321);
+  });
+
+  it('不正値（"abc"）が直接書かれた場合は null を返す', () => {
+    localStorage.setItem('tatemd.split.v1', 'abc');
+    expect(loadSplit()).toBeNull();
+  });
+
+  it('空文字が直接書かれた場合は null を返す', () => {
+    localStorage.setItem('tatemd.split.v1', '');
+    expect(loadSplit()).toBeNull();
+  });
+
+  it('getItem が throw してもクラッシュせず null を返す', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('読み込みエラー');
+    });
+    expect(() => loadSplit()).not.toThrow();
+    expect(loadSplit()).toBeNull();
+  });
+});
+
+describe('saveSplit', () => {
+  it('setItem が throw しても saveSplit が throw しない', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('容量超過');
+    });
+    expect(() => saveSplit(400)).not.toThrow();
   });
 });

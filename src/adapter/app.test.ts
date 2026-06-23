@@ -109,4 +109,46 @@ describe('initApp()', () => {
     expect(b6btn.getAttribute('aria-pressed')).toBe('true');
     expect(a5btn.getAttribute('aria-pressed')).toBe('false');
   });
+
+  it('.print-btn クリックで window.print が呼ばれる', () => {
+    // jsdom は window.print を実装していないため事前にスタブを差す
+    if (!window.print) {
+      window.print = () => {};
+    }
+    const printSpy = vi.spyOn(window, 'print');
+    initApp();
+    const printBtn = document.querySelector<HTMLButtonElement>('.print-btn')!;
+    printBtn.click();
+    expect(printSpy).toHaveBeenCalledOnce();
+  });
+
+  it('入力後 500ms で原稿が保存される', async () => {
+    vi.useFakeTimers();
+    initApp();
+
+    const textarea = document.querySelector<HTMLTextAreaElement>('textarea.editor')!;
+    const newText = '新しい原稿テキスト';
+
+    textarea.value = newText;
+    textarea.dispatchEvent(new Event('input'));
+
+    // 500ms 未満ではまだ保存されない
+    vi.advanceTimersByTime(499);
+    const { loadManuscript } = await import('./storage');
+    expect(loadManuscript()).not.toBe(newText);
+
+    // 500ms 経過後に保存される
+    vi.advanceTimersByTime(1);
+    expect(loadManuscript()).toBe(newText);
+  });
+
+  it('localStorage が throw する状況でも initApp が例外を投げない', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('SecurityError');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('SecurityError');
+    });
+    expect(() => initApp()).not.toThrow();
+  });
 });

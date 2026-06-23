@@ -12,6 +12,7 @@ export type PaperSize = 'a5' | 'b6';
 const STORAGE_KEYS = {
   manuscript: 'tatemd.manuscript.v1',
   paperSize: 'tatemd.paperSize.v1',
+  split: 'tatemd.split.v1',
 } as const;
 
 // PaperSize として有効な値のセット
@@ -98,6 +99,43 @@ export function savePaperSize(size: PaperSize): void {
       return;
     }
     storage.setItem(STORAGE_KEYS.paperSize, size);
+  } catch {
+    // 容量超過・SecurityError 等を握りつぶす
+  }
+}
+
+/**
+ * 保存済みのスプリッター位置（px）を読み込む。
+ * 未保存・数値として不正な値・読み込み失敗時は null を返す。
+ */
+export function loadSplit(): number | null {
+  try {
+    const storage = getStorage();
+    if (storage === null) {
+      return null;
+    }
+    const value = storage.getItem(STORAGE_KEYS.split);
+    if (value === null) {
+      return null;
+    }
+    const n = parseFloat(value);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * スプリッター位置（px）を保存する。
+ * 保存に失敗しても例外を投げない（黙って何もしない）。
+ */
+export function saveSplit(px: number): void {
+  try {
+    const storage = getStorage();
+    if (storage === null) {
+      return;
+    }
+    storage.setItem(STORAGE_KEYS.split, String(Math.round(px)));
   } catch {
     // 容量超過・SecurityError 等を握りつぶす
   }
