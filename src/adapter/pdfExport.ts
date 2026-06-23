@@ -1,110 +1,143 @@
 /**
- * 絵巻（長尺一枚）PDF エクスポート — best-effort 実装（Chrome 第一対象）。
+ * 絵巻（長尺一枚）PDF エクスポート — 新タブ方式（Chrome 第一対象）。
+ *
+ * 背景（headless Chrome で 6 通り検証して判明した制約）:
+ *   Chrome の印刷メディアは縦書き(vertical-rl)を画面と別レイアウトに再フローし、
+ *   要素の行長(height)指定を無視して列を激増させる。その結果、実測幅で @page を
+ *   切っても 3〜13 ページに分裂し、横長 1 枚にならない。
+ *
+ * 効いた条件（本実装の核）:
+ *   印刷時に **html, body の高さを行長(px)に固定し overflow:hidden** にすると、
+ *   行長が保持され、列が崩れず、@page を実測幅 × 行長にすれば横長 1 枚に収まる。
+ *   （ラスタ化しないためテキストは選択可能なまま）
  *
  * 方針:
- *   - 縦書き要素をクローンして固定行長(LINE_LEN_PX)で横方向総延長(scrollWidth)を実測。
- *   - 実測 scrollHeight をページ高の基準とし、下端の切れを防ぐ。
- *   - @page { size: <幅>mm <高>mm; margin: 0 } に差し替えて window.print() を呼ぶ。
- *   - afterprint（＋3秒タイムアウト保険）で inline style・data 属性・@page を復帰させる。
+ *   - 本文(.tategaki)だけを載せた自己完結ページを新タブに開く。
+ *   - 画面では height:88vh で表示（横スクロールで読める）。
+ *   - @media print でのみ html/body/.tategaki の高さを行長に固定。
+ *   - 新タブ自身が描画後に実寸を測って @page を決める（印刷直前の確実な値）。
+ *   - 用紙無視の忠実 PDF が要るときは CLI(tools/emaki-pdf.mjs) を案内する。
  */
 
-import { applyPaperSize, getPaperSize } from './paperSize';
-
-/** 1 行（縦の列）の長さ = 長尺1枚の高さ（px）。実測の基準となる固定値。 */
+/** 1 行（縦の列）の長さ = 長尺1枚の高さ（px）。@page 高さ・印刷時の行長になる。 */
 const LINE_LEN_PX = 640;
 
-/** 横方向スラック: 印刷再レイアウト時の誤差吸収。contentW の 5% + 24px。 */
-const slackW = (contentW: number): number => Math.ceil(contentW * 0.05) + 24;
-
-/** px → mm 変換係数（96 dpi 基準）*/
-const PX_TO_MM = 25.4 / 96;
-
 /**
- * <style id="print-page"> の textContent を差し替える。
- * 要素が存在しない場合は head に生成する。
+ * 現在ページの読み込み済みスタイルシートから `.tategaki` 系の組版ルールだけを
+ * 抽出して 1 つの CSS 文字列にまとめる。
+ * - app.css / print.css のレイアウト・印刷専用ルールは持ち込まない
+ *   （新タブには header/editor 等が存在しないため不要、かつ干渉を避ける）。
+ * - @media 等にネストされたルールは対象外（トップレベルの組版ルールのみ）。
+ * - クロスオリジンのシートは cssText 参照で例外を投げるため握りつぶす。
  */
-function setPrintPageStyle(css: string): void {
-  let el = document.getElementById('print-page') as HTMLStyleElement | null;
-  if (!el) {
-    el = document.createElement('style');
-    el.id = 'print-page';
-    document.head.appendChild(el);
+function collectTategakiCss(): string {
+  const chunks: string[] = [];
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rules: CSSRuleList;
+    try {
+      rules = sheet.cssRules;
+    } catch {
+      continue; // クロスオリジン等で参照不可
+    }
+    for (const rule of Array.from(rules)) {
+      if (
+        rule instanceof CSSStyleRule &&
+        rule.selectorText.split(',').some((s) => s.trim().startsWith('.tategaki'))
+      ) {
+        chunks.push(rule.cssText);
+      }
+    }
   }
-  el.textContent = css;
+  return chunks.join('\n');
 }
 
 /**
- * 絵巻（長尺一枚）モードで印刷ダイアログを開く。
- * 印刷完了後（afterprint または 3 秒タイムアウト）に元の状態へ復帰する。
+ * 新タブの本文描画後に実寸幅を測り @page を確定する自己完結スクリプト。
+ * 印刷の行長(LINE)で一旦測り、画面表示用の高さに戻してから @page を流し込む。
+ * 文字列として新タブへ書き込み、新タブ内で実行させる。
+ */
+function measureScript(line: number): string {
+  return `(function(){
+  var LINE = ${line}, MM = 25.4/96;
+  function measure(){
+    var t = document.querySelector('.tategaki');
+    if(!t) return;
+    var prev = t.style.height;
+    t.style.height = LINE + 'px';          // 印刷時の行長で実測
+    var raw = Math.ceil(t.scrollWidth);
+    var W = raw + Math.ceil(raw*0.02) + 16; // 横方向スラック（再レイアウト誤差の保険）
+    t.style.height = prev;                  // 画面表示の高さに復帰
+    var st = document.getElementById('tatemd-page') || document.createElement('style');
+    st.id = 'tatemd-page';
+    st.textContent = '@page{size:'+(W*MM).toFixed(1)+'mm '+(LINE*MM).toFixed(1)+'mm;margin:0}';
+    document.head.appendChild(st);
+  }
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function(){ requestAnimationFrame(measure); });
+  } else {
+    requestAnimationFrame(measure);
+  }
+})();`;
+}
+
+/**
+ * 絵巻（長尺一枚）を新しいタブに開く。
+ * 新タブのページは画面では横スクロールで読め、「PDFで保存」ボタン（印刷時は非表示）
+ * または ⌘P で内容ぴったりの横長 1 枚 PDF として保存できる（テキスト選択可）。
  */
 export function exportEmaki(): void {
   const tategaki = document.querySelector<HTMLElement>('.preview-pane > .tategaki');
   if (!tategaki) return;
 
-  // --- 手順 1: クローンで横方向総延長(scrollWidth)を実測 ---
-  // 縦書き(vertical-rl)では:
-  //   scrollWidth  = 列が増える方向（横）の総延長 ≒ ページ幅
-  //   scrollHeight = 1 列の高さ                  ≒ ページ高
-  // 画面上の .tategaki は viewport 依存の高さになるため、
-  // 固定行長(LINE_LEN_PX)でクローンを画面外に配置して実測する。
-  const clone = tategaki.cloneNode(true) as HTMLElement;
-  clone.style.position = 'absolute';
-  clone.style.left = '-100000px';
-  clone.style.top = '0';
-  clone.style.visibility = 'hidden';
-  clone.style.height = LINE_LEN_PX + 'px';
-  clone.style.width = 'auto';
-  clone.style.overflow = 'visible';
-  // writing-mode が継承されない環境でも確実に反映させる
-  clone.style.writingMode = 'vertical-rl';
-  document.body.appendChild(clone);
+  const tategakiCss = collectTategakiCss();
+  const bodyHtml = tategaki.innerHTML;
 
-  // レイアウト確定（強制リフロー）
-  void clone.offsetWidth;
-  const contentW = clone.scrollWidth;
-  // ページ高は実測 scrollHeight ベース（padding 込み）にして下端の切れを防ぐ
-  const contentH = Math.max(clone.scrollHeight, LINE_LEN_PX);
-  document.body.removeChild(clone);
+  // 新タブを開く（長尺ボタンのクリック起点なのでポップアップブロック対象外）。
+  const win = window.open('', '_blank');
+  if (!win) return; // ブロックされた等
 
-  // ページボックス寸法（px）
-  const boxW = contentW + slackW(contentW);
-  const boxH = contentH;
+  const doc = `<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TATEmd 絵巻</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #fff; }
+${tategakiCss}
+/* 画面: 高めに表示して横スクロールで読む（抽出 CSS の height/overflow を上書き）*/
+.tategaki { height: 88vh; width: max-content; overflow: visible; }
+/* 操作バー（印刷時は非表示）*/
+.tatemd-toolbar {
+  position: fixed; top: 16px; left: 16px; z-index: 9999;
+  display: flex; gap: 8px; align-items: center;
+  font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", sans-serif;
+}
+.tatemd-toolbar button {
+  padding: 8px 18px; border: none; border-radius: 8px;
+  background: #16a34a; color: #fff; font-size: 14px; cursor: pointer;
+}
+.tatemd-toolbar span { color: #666; font-size: 12px; }
+/* 印刷: 行長を固定し overflow:hidden にすると縦書きの列が崩れず横長 1 枚になる */
+@media print {
+  html, body { height: ${LINE_LEN_PX}px; overflow: hidden; }
+  .tategaki { height: ${LINE_LEN_PX}px; }
+  .tatemd-toolbar { display: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="tatemd-toolbar">
+  <button type="button" onclick="window.print()">PDFで保存</button>
+  <span>または ⌘P / Ctrl+P → 「PDFに保存」（横長1枚）</span>
+</div>
+<div class="tategaki">${bodyHtml}</div>
+<script>${measureScript(LINE_LEN_PX)}</script>
+</body>
+</html>`;
 
-  // px → mm
-  const pageWmm = (boxW * PX_TO_MM).toFixed(1);
-  const pageHmm = (boxH * PX_TO_MM).toFixed(1);
-
-  // --- 手順 2: 長尺モード設定 ---
-  document.body.dataset.pdfMode = 'scroll';
-
-  // .tategaki をページボックスぴったりに固定
-  tategaki.style.width = boxW + 'px';
-  tategaki.style.height = boxH + 'px';
-
-  // @page を長尺寸法（余白 0）に差し替え
-  setPrintPageStyle(`@page { size: ${pageWmm}mm ${pageHmm}mm; margin: 0; }`);
-
-  // --- 手順 3: 印刷 ---
-  window.print();
-
-  // --- 手順 4: 復帰処理（afterprint + 3 秒タイムアウト保険）---
-  const restore = (): void => {
-    if (document.body.dataset.pdfMode !== 'scroll') return; // 既に復帰済み
-    document.body.removeAttribute('data-pdf-mode');
-    tategaki.style.removeProperty('width');
-    tategaki.style.removeProperty('height');
-    applyPaperSize(getPaperSize());
-  };
-
-  const onAfterPrint = (): void => {
-    window.removeEventListener('afterprint', onAfterPrint);
-    restore();
-  };
-  window.addEventListener('afterprint', onAfterPrint);
-
-  // afterprint が発火しないブラウザ（旧 Safari 等）への保険
-  setTimeout(() => {
-    window.removeEventListener('afterprint', onAfterPrint);
-    restore();
-  }, 3000);
+  win.document.open();
+  win.document.write(doc);
+  win.document.close();
 }
