@@ -55,8 +55,11 @@
         <!-- 用紙切替（A5/B6）・印刷ボタンは Wave 3 で結線（クリック処理は JS で付与） -->
         <button type="button" class="paper-btn" data-size="a5" aria-pressed="true">A5</button>
         <button type="button" class="paper-btn" data-size="b6" aria-pressed="false">B6</button>
+        <button type="button" class="image-btn">画像</button>
         <button type="button" class="print-btn">印刷</button>
         <button type="button" class="scroll-btn">長尺</button>
+        <!-- 画像ボタン用の隠しファイル入力（ドラッグ&ドロップ・ペーストは textarea で受ける） -->
+        <input type="file" class="image-input" accept="image/*" multiple hidden />
       </div>
     </header>
     <main class="app-main">

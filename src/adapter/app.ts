@@ -12,6 +12,7 @@ import { loadManuscript, saveManuscript, loadSplit, saveSplit } from './storage'
 import { type PaperSize } from './storage';
 import { applyPaperSize, initPaperSize, getPaperSize } from './paperSize';
 import { exportEmaki } from './pdfExport';
+import { initImageInput } from './imageInsert';
 import { debounce } from './debounce';
 import { initSplitter } from './splitter';
 
@@ -91,6 +92,19 @@ export function initApp(): void {
   if (scrollBtn) {
     scrollBtn.addEventListener('click', () => {
       exportEmaki();
+    });
+  }
+
+  // --- 画像挿入（ドラッグ&ドロップ・ペースト・「画像」ボタン）---
+  // ローカル画像を縮小して data URL でカーソル位置に埋め込む（完全クライアントサイド）。
+  const imageInput = initImageInput(textarea);
+  const imageBtn = document.querySelector<HTMLButtonElement>('.image-btn');
+  const imageFile = document.querySelector<HTMLInputElement>('.image-input');
+  if (imageBtn && imageFile) {
+    imageBtn.addEventListener('click', () => imageFile.click());
+    imageFile.addEventListener('change', () => {
+      void imageInput.insertFiles(imageFile.files);
+      imageFile.value = ''; // 同じファイルを連続選択できるようにリセット
     });
   }
 
