@@ -110,16 +110,23 @@ describe('initApp()', () => {
     expect(a5btn.getAttribute('aria-pressed')).toBe('false');
   });
 
-  it('.print-btn クリックで window.print が呼ばれる', () => {
-    // jsdom は window.print を実装していないため事前にスタブを差す
-    if (!window.print) {
-      window.print = () => {};
-    }
-    const printSpy = vi.spyOn(window, 'print');
+  it('.print-btn クリックで原稿と用紙を sessionStorage に渡し印刷タブを開く', () => {
+    // jsdom は window.open 未実装のためスタブを差す
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     initApp();
+    const textarea = document.querySelector<HTMLTextAreaElement>('textarea.editor')!;
+    textarea.value = '# 見出し\n本文';
     const printBtn = document.querySelector<HTMLButtonElement>('.print-btn')!;
     printBtn.click();
-    expect(printSpy).toHaveBeenCalledOnce();
+
+    expect(sessionStorage.getItem('tatemd:print:manuscript')).toBe('# 見出し\n本文');
+    expect(sessionStorage.getItem('tatemd:print:paper')).toBe('a5');
+    expect(openSpy).toHaveBeenCalledOnce();
+    // print.html を新タブで開く
+    const [url, target] = openSpy.mock.calls[0];
+    expect(String(url)).toContain('print.html');
+    expect(target).toBe('_blank');
+    openSpy.mockRestore();
   });
 
   it('入力後 500ms で原稿が保存される', async () => {

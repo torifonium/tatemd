@@ -10,7 +10,7 @@ import { SAMPLE_MANUSCRIPT } from '../core/sampleManuscript';
 import { initEditor } from './editor';
 import { loadManuscript, saveManuscript, loadSplit, saveSplit } from './storage';
 import { type PaperSize } from './storage';
-import { applyPaperSize, initPaperSize } from './paperSize';
+import { applyPaperSize, initPaperSize, getPaperSize } from './paperSize';
 import { exportEmaki } from './pdfExport';
 import { debounce } from './debounce';
 import { initSplitter } from './splitter';
@@ -75,9 +75,15 @@ export function initApp(): void {
   });
 
   // --- 印刷ボタン ---
+  // ブラウザのネイティブ印刷は縦書きを複数ページに分割できないため、
+  // 原稿と用紙サイズを sessionStorage に渡し、Vivliostyle 同梱の印刷タブ
+  // (print.html) を新タブで開いて A5/B6 の忠実な複数ページ縦書き PDF にする。
   if (printBtn) {
     printBtn.addEventListener('click', () => {
-      window.print();
+      sessionStorage.setItem('tatemd:print:manuscript', textarea.value);
+      sessionStorage.setItem('tatemd:print:paper', getPaperSize());
+      const printUrl = new URL('print.html', window.location.href).href;
+      window.open(printUrl, '_blank');
     });
   }
 
