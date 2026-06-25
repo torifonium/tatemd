@@ -33,3 +33,6 @@ dist-cli/
 
 # メンテナ向けローカルメモ（公開・認証手順。コミットしない）
 RELEASE_TODO.local.md
+
+# VSCode 拡張のパッケージ成果物
+*.vsix
