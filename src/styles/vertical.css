@@ -74,6 +74,9 @@
   padding-inline-start: 1em;
   border-inline-start: 3px solid #c0c0c0;
   color: #555;
+  /* VS Code webview は blockquote に既定で var(--vscode-textBlockQuote-background)
+     を当てる（暗テーマだと濃灰の塗り）。紙背景を明示して上書きする（Web/CLI では無害）。 */
+  background: transparent;
   font-style: normal; /* 縦書きで italic は崩れやすいため無効化 */
 }
 
