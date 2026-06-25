@@ -13,6 +13,9 @@ package-lock.json
 # 依存パッケージ（out/ にバンドル済みのため不要）
 node_modules/
 
+# 掲載 README 用スクショは絶対 URL 参照なので vsix には同梱しない（icon.png は同梱する）
+images/
+
 # ルートの tatemd ソース（拡張には不要）
 ../src/
 ../index.html

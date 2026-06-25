@@ -7,10 +7,14 @@
 Markdown ファイルを **縦書き** でリアルタイムプレビューし、**絵巻 PDF（横長1枚）** として書き出せる VSCode 拡張です。
 [tatemd](https://github.com/torifonium/tatemd) の変換コア（`renderToTypesettingHtml`）と縦書き CSS を直接再利用しています。
 
+![縦書きプレビュー](https://raw.githubusercontent.com/torifonium/tatemd/main/vscode-extension/images/preview.png)
+
 ## 機能
 
-- **縦書きプレビュー**: Markdown を日本語縦書き（右から左）でレンダリングし、エディタ編集に追従してリアルタイム更新（150ms デバウンス）
-- **絵巻 PDF 書き出し**: 全文を横長1枚の絵巻状 PDF として書き出し
+- **縦書きプレビュー** — Markdown を和文組版の縦書き（`writing-mode: vertical-rl`・右から左）でレンダリング。エディタの編集に追従してリアルタイム更新（150ms デバウンス）。
+- **本物の縦書き組版** — 禁則処理・英数字の整列・約物はブラウザネイティブ CSS に委譲。傍点（`*強調*`）や見出し・引用・リスト・水平線も縦書きで自然に表示。
+- **絵巻 PDF 書き出し** — 本文を既定ブラウザで開き、そこから「PDF で保存」すると**横に長い一枚（絵巻物スタイル）**の PDF になる。文字は画像化せず選択可能。
+- **Web 版と同じコア** — [tatemd](https://torifonium.github.io/tatemd/) の Web 版・CLI と同一の変換ロジック／CSS を共有。見た目が揃い、挙動も一貫。
 
 ## インストール
 
