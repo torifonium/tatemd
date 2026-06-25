@@ -42,8 +42,12 @@ function buildHtml(
       box-sizing: border-box;
       overflow: hidden;
     }
+    /* 縦書きでは width:auto だと .tategaki が内容幅まで広がり、親に clip されて
+       横スクロールできず本文が切れる（白く見える）。pane 幅に拘束すると
+       vertical.css の overflow-x:auto が効き、先頭(右)から横スクロールで読める。 */
     .tategaki {
       height: 100%;
+      width: 100%;
     }
   </style>
 </head>
