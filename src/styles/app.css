@@ -1,11 +1,9 @@
 /* ==========================================================================
-   app.css — レイアウト・UI スタイル
+   app.css — レイアウト・UI スタイル（紙×墨×朱のブランド調）
    縦書き組版（writing-mode 等）は vertical.css の責務。ここでは書かない。
+   外部フォントは読み込まない（オフライン・外部送信なし）。和文はシステム明朝/ゴシック。
    ========================================================================== */
 
-/* --------------------------------------------------------------------------
-   リセット・ベース
-   -------------------------------------------------------------------------- */
 *,
 *::before,
 *::after {
@@ -15,20 +13,36 @@
 }
 
 :root {
-  /* ヘッダ高さ（.app-header と .app-main の高さ計算で共有し、二重管理を避ける） */
-  --header-h: 48px;
-  /* ペイン境界の太さ */
+  --header-h: 52px;
   --divider-w: 6px;
+
+  /* 紙×墨×朱のパレット */
+  --paper: #f4f1ea; /* 生成りの紙 */
+  --paper-edit: #faf8f2; /* エディタ（やや明るい紙）*/
+  --paper-card: #fbf9f4; /* モーダル等のカード紙 */
+  --ink: #211f1b; /* 墨 */
+  --ink-soft: #6f6857; /* 淡い墨（補助テキスト）*/
+  --seal: #c8342a; /* 朱（落款）— オレンジ味を抑えた強い赤 */
+  --seal-deep: #a8281f;
+  --line: rgba(33, 31, 27, 0.14); /* 罫（淡い墨の線）*/
+  --line-strong: rgba(33, 31, 27, 0.5);
+
+  --gothic: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Noto Sans JP",
+    -apple-system, BlinkMacSystemFont, sans-serif;
+  --mincho: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
 }
 
 html,
 body {
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
-    "Noto Sans JP", sans-serif;
+  font-family: var(--gothic);
   font-size: 14px;
-  color: #1a1a1a;
-  background-color: #f5f5f5;
+  color: var(--ink);
+  /* 紙の地。ごく淡いトーンむらで平板さを避ける（CSS のみ・画像なし）*/
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(120% 80% at 100% 0%, rgba(255, 255, 255, 0.5), transparent 60%),
+    radial-gradient(120% 90% at 0% 100%, rgba(33, 31, 27, 0.035), transparent 55%);
 }
 
 /* --------------------------------------------------------------------------
@@ -39,133 +53,159 @@ body {
   align-items: center;
   justify-content: space-between;
   height: var(--header-h);
-  padding: 0 16px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 0 18px;
+  background-color: rgba(251, 249, 244, 0.85);
+  backdrop-filter: saturate(1.1) blur(2px);
+  border-bottom: 1px solid var(--line);
   flex-shrink: 0;
 }
 
+/* ブランド：墨の TATEmd ＋ 朱の落款マーク */
 .app-title {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: #1a1a1a;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--mincho);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+.app-title::before {
+  content: "縦";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: var(--seal);
+  color: #fbf9f4;
+  font-size: 13px;
+  font-family: var(--mincho);
+  /* 落款の押印らしい微かな沈み */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 /* 操作ボタン群 */
 .app-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 /* --------------------------------------------------------------------------
-   共通ボタンスタイル
+   ボタン（ゴースト基調 / トグルは墨塗り / 長尺は朱）
    -------------------------------------------------------------------------- */
 .paper-btn,
-.print-btn {
+.print-btn,
+.image-btn,
+.help-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 32px;
-  padding: 0 12px;
-  border: 1px solid #c8c8c8;
-  border-radius: 4px;
-  background-color: #ffffff;
-  color: #333333;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background-color: transparent;
+  color: var(--ink);
+  font-family: var(--gothic);
   font-size: 13px;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .paper-btn:hover,
-.print-btn:hover {
-  background-color: #f0f0f0;
-  border-color: #999999;
+.print-btn:hover,
+.image-btn:hover,
+.help-btn:hover {
+  background-color: rgba(33, 31, 27, 0.06);
+  border-color: var(--ink);
 }
-
 .paper-btn:active,
-.print-btn:active {
-  background-color: #e4e4e4;
+.print-btn:active,
+.image-btn:active,
+.help-btn:active {
+  background-color: rgba(33, 31, 27, 0.12);
 }
 
-/* 用紙サイズ選択ボタン：選択中状態（Wave 3 で JS から付与） */
+/* 用紙サイズ：選択中は墨塗り */
 .paper-btn[aria-pressed="true"],
 .paper-btn.is-active {
-  background-color: #1a1a1a;
-  border-color: #1a1a1a;
-  color: #ffffff;
+  background-color: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
 }
 
-/* 印刷ボタンは少し区別する（左に区切り線） */
+/* 印刷の左に細い区切り */
 .print-btn {
-  margin-left: 8px;
-  border-left: 1px solid #c8c8c8;
+  margin-left: 6px;
 }
 
-/* 長尺（絵巻）ボタン */
+/* ヘルプは円形アイコンボタン */
+.help-btn {
+  width: 32px;
+  padding: 0;
+  border-radius: 50%;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+/* 長尺（絵巻）＝看板機能。朱で主役に */
 .scroll-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 32px;
-  padding: 0 12px;
-  border: 1px solid #7a9a7a;
-  border-radius: 4px;
-  background-color: #3a6b3a;
-  color: #ffffff;
+  padding: 0 16px;
+  border: 1px solid var(--seal-deep);
+  border-radius: 5px;
+  background-color: var(--seal);
+  color: #fbf9f4;
+  font-family: var(--gothic);
   font-size: 13px;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.15s ease;
 }
-
 .scroll-btn:hover {
-  background-color: #4a7a4a;
-  border-color: #5aaa5a;
+  background-color: var(--seal-deep);
 }
-
 .scroll-btn:active {
-  background-color: #2a5a2a;
-}
-
-.scroll-btn:disabled {
-  background-color: #555555;
-  border-color: #666666;
-  color: #999999;
-  cursor: default;
+  background-color: #7e2e20;
 }
 
 /* --------------------------------------------------------------------------
    メインエリア — CSS Grid 2カラム
-   左: textarea.editor  /  右: section.preview-pane
    -------------------------------------------------------------------------- */
 .app-main {
   display: grid;
-  /* 左=エディタ（可変・スプリッターでドラッグ） / 中=仕切り / 右=プレビュー（残り） */
   grid-template-columns: var(--editor-w, 1fr) var(--divider-w) 1fr;
-  /* ヘッダを除いた残り高さ。100dvh でモバイルのアドレスバー由来の本文切れを回避 */
   height: calc(100dvh - var(--header-h));
   overflow: hidden;
 }
 
-/* ペイン境界（ドラッグで左右比率を変更） */
+/* ペイン境界 */
 .pane-divider {
   width: var(--divider-w);
   height: 100%;
   cursor: col-resize;
-  background-color: #e0e0e0;
-  /* 当たり判定を少し広げるための擬似要素 */
+  background-color: var(--line);
   position: relative;
   transition: background-color 0.12s ease;
-  touch-action: none; /* タッチでのスクロールを抑止しドラッグに専念 */
+  touch-action: none;
 }
 .pane-divider:hover,
 .pane-divider:focus-visible,
 .pane-divider.is-dragging {
-  background-color: #1a1a1a;
+  background-color: var(--ink);
   outline: none;
 }
-/* 細い線でも掴みやすいよう、見た目より広い当たり判定 */
 .pane-divider::before {
   content: "";
   position: absolute;
@@ -178,22 +218,19 @@ body {
 .editor {
   width: 100%;
   height: 100%;
-  padding: 16px;
+  padding: 20px 18px;
   border: none;
-  border-right: 1px solid #e0e0e0;
-  background-color: #fafafa;
-  font-family: "SFMono-Regular", "Menlo", "Consolas", "Hiragino Kaku Gothic ProN",
-    "Noto Sans Mono CJK JP", monospace;
+  background-color: var(--paper-edit);
+  font-family: "SFMono-Regular", "Menlo", "Consolas", var(--gothic), monospace;
   font-size: 14px;
-  line-height: 1.7;
-  color: #1a1a1a;
+  line-height: 1.8;
+  color: var(--ink);
   resize: none;
   outline: none;
+  caret-color: var(--seal);
 }
-
-.editor:focus {
-  background-color: #ffffff;
-  border-right-color: #c0c0c0;
+.editor::placeholder {
+  color: var(--ink-soft);
 }
 
 /* --------------------------------------------------------------------------
@@ -202,19 +239,180 @@ body {
 .preview-pane {
   width: 100%;
   height: 100%;
-  padding: 24px;
-  background-color: #ffffff;
+  padding: 28px 30px;
+  background-color: var(--paper);
+  color: var(--ink);
   overflow: auto;
 }
 
-/* .tategaki は縦書き化の入れ物（writing-mode 等は vertical.css で設定） */
 .tategaki {
-  /* 高さいっぱいに広げてスクロール対象にする */
   min-height: 100%;
 }
 
 /* --------------------------------------------------------------------------
-   最小フォールバック（狭幅: 縦積み）
+   ヘルプ（モーダル）
+   -------------------------------------------------------------------------- */
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: rgba(33, 31, 27, 0.42);
+  backdrop-filter: blur(2px);
+}
+.help-overlay.is-open {
+  display: flex;
+  animation: tatemd-fade 0.18s ease;
+}
+.help-card {
+  width: min(560px, 100%);
+  max-height: 86vh;
+  overflow: auto;
+  background-color: var(--paper-card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(33, 31, 27, 0.28);
+  padding: 28px 30px 30px;
+  animation: tatemd-rise 0.22s ease;
+}
+.help-card h2 {
+  font-family: var(--mincho);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  border-bottom: 2px solid var(--seal);
+  padding-bottom: 8px;
+  margin-bottom: 6px;
+}
+.help-card dl {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 10px 16px;
+  align-items: baseline;
+}
+.help-card dt {
+  font-weight: 700;
+  color: var(--seal-deep);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.help-card dd {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.help-card .help-note {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.help-card kbd {
+  font-family: "SFMono-Regular", Menlo, monospace;
+  font-size: 11px;
+  background: rgba(33, 31, 27, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.help-close {
+  float: right;
+  margin: -6px -8px 0 0;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 18px;
+  cursor: pointer;
+}
+.help-close:hover {
+  background: rgba(33, 31, 27, 0.08);
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   初回ヒント帯（吹き出し・初回訪問時のみ JS が表示）
+   -------------------------------------------------------------------------- */
+.hint-band {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: none;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100vw - 32px);
+  padding: 11px 14px 11px 18px;
+  background-color: var(--ink);
+  color: var(--paper);
+  border-radius: 10px;
+  box-shadow: 0 14px 40px rgba(33, 31, 27, 0.34);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+.hint-band.is-open {
+  display: flex;
+  animation: tatemd-rise 0.26s ease;
+}
+.hint-band .hint-text {
+  line-height: 1.6;
+}
+.hint-band .hint-text b {
+  color: #f3c9b0;
+  font-weight: 700;
+}
+.hint-band .hint-close {
+  flex-shrink: 0;
+  border: 1px solid rgba(244, 241, 234, 0.4);
+  background: transparent;
+  color: var(--paper);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.hint-band .hint-close:hover {
+  background: rgba(244, 241, 234, 0.14);
+}
+
+@keyframes tatemd-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes tatemd-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+/* ヒント帯は translateX 済みなので rise を上書き */
+.hint-band.is-open {
+  animation-name: tatemd-rise-band;
+}
+@keyframes tatemd-rise-band {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   狭幅（縦積み）
    -------------------------------------------------------------------------- */
 @media (max-width: 640px) {
   .app-main {
@@ -224,20 +422,26 @@ body {
     min-height: calc(100dvh - var(--header-h));
     overflow: visible;
   }
-
-  /* 狭幅では縦積みにし、ドラッグ境界は隠す（display:none で grid から除外） */
   .pane-divider {
     display: none;
   }
-
   .editor {
     height: 100%;
-    border-right: none;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--line);
   }
-
   .preview-pane {
     height: 100%;
     overflow: auto;
+  }
+  .app-title {
+    font-size: 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-overlay.is-open,
+  .help-card,
+  .hint-band.is-open {
+    animation: none;
   }
 }

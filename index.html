@@ -58,6 +58,7 @@
         <button type="button" class="image-btn">画像</button>
         <button type="button" class="print-btn">印刷</button>
         <button type="button" class="scroll-btn">長尺</button>
+        <button type="button" class="help-btn" aria-label="ヘルプ" aria-haspopup="dialog">?</button>
         <!-- 画像ボタン用の隠しファイル入力（ドラッグ&ドロップ・ペーストは textarea で受ける） -->
         <input type="file" class="image-input" accept="image/*" multiple hidden />
       </div>
@@ -75,6 +76,40 @@
         <div class="tategaki"></div>
       </section>
     </main>
+
+    <!-- ヘルプ（? ボタンで開閉） -->
+    <div class="help-overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+      <div class="help-card">
+        <button type="button" class="help-close" aria-label="閉じる">×</button>
+        <h2 id="help-title">TATEmd の使い方</h2>
+        <dl>
+          <dt>書く</dt>
+          <dd>左に Markdown を書くと、右に和文組版の縦書きでリアルタイム表示。編集位置に追従します。</dd>
+          <dt>画像</dt>
+          <dd><b>ドラッグ&amp;ドロップ</b> / <b>ペースト</b>（<kbd>⌘/Ctrl V</kbd>）/ <b>画像</b>ボタンで挿入。自動縮小して埋め込み（アップロードなし）。</dd>
+          <dt>A5 / B6</dt>
+          <dd>用紙サイズを選ぶ。印刷の判型に反映されます。</dd>
+          <dt>印刷</dt>
+          <dd>新しいタブで開き、選んだ判型の<b>複数ページ縦書き PDF</b>として保存（文字は選択可能）。</dd>
+          <dt>長尺</dt>
+          <dd>絵巻物スタイルの<b>横長一枚 PDF</b>を新しいタブで。原稿が長いほど横に長い一枚に。</dd>
+          <dt>境界</dt>
+          <dd>中央の仕切りをドラッグして左右の幅を調整。</dd>
+        </dl>
+        <p class="help-note">
+          すべてブラウザ内で完結します。サーバー送信なし・インストール不要。原稿は自動保存され、リロードしても残ります。
+        </p>
+      </div>
+    </div>
+
+    <!-- 初回訪問時のみ表示するヒント帯（JS が localStorage を見て制御） -->
+    <div class="hint-band" role="status" hidden>
+      <span class="hint-text">
+        <b>左のエディタに書く</b> → 右に縦書きで反映。画像は<b>ドロップ</b>、<b>長尺</b>で絵巻PDF。使い方は <b>?</b> を参照
+      </span>
+      <button type="button" class="hint-close">わかった</button>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

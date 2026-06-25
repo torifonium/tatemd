@@ -13,6 +13,7 @@ import { type PaperSize } from './storage';
 import { applyPaperSize, initPaperSize, getPaperSize } from './paperSize';
 import { exportEmaki } from './pdfExport';
 import { initImageInput } from './imageInsert';
+import { initUiChrome } from './uiChrome';
 import { debounce } from './debounce';
 import { initSplitter } from './splitter';
 
@@ -161,4 +162,7 @@ export function initApp(): void {
     initial: loadSplit(),
     onChange: saveSplit,
   });
+
+  // --- ヘルプ・初回ヒント帯 ---
+  initUiChrome();
 }
