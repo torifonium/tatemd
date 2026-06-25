@@ -2,7 +2,7 @@
 
 Markdown を書くと和文組版の縦書きで即プレビュー、そのまま印刷／PDF に出せる静的 Web ツール。
 
-![demo](docs/demo.gif)
+![tatemd 縦書きプレビュー](https://raw.githubusercontent.com/torifonium/tatemd/main/docs/preview.png)
 
 **[デモを開く（GitHub Pages）](https://torifonium.github.io/tatemd/)**
 
