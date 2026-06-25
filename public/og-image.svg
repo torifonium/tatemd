@@ -33,30 +33,16 @@
   </g>
   <text x="110" y="510" font-family="'Helvetica Neue',Arial,sans-serif" font-size="22" fill="#9a9484"># Markdown を書くと…</text>
 
-  <!-- 右ペイン: 縦書きプレビューの主役テキスト（vertical-rl を SVG で表現: 右→左の列、各列は縦に文字を積む） -->
-  <!-- 1列目（右端） -->
-  <g font-family="'Hiragino Mincho ProN','Yu Mincho',serif" font-size="64" fill="url(#ink)" text-anchor="middle">
-    <text x="1060" y="160">縦</text>
-    <text x="1060" y="236">書</text>
-    <text x="1060" y="312">き</text>
-    <text x="1060" y="388">で</text>
-    <text x="1060" y="464">即</text>
-  </g>
-  <!-- 2列目 -->
-  <g font-family="'Hiragino Mincho ProN','Yu Mincho',serif" font-size="64" fill="url(#ink)" text-anchor="middle">
-    <text x="950" y="160">プ</text>
-    <text x="950" y="236">レ</text>
-    <text x="950" y="312">ビ</text>
-    <text x="950" y="388">ュ</text>
-    <text x="950" y="464">ー</text>
-  </g>
-  <!-- 3列目（やや淡く奥行き） -->
-  <g font-family="'Hiragino Mincho ProN','Yu Mincho',serif" font-size="56" fill="#5a5a5a" text-anchor="middle">
-    <text x="848" y="166">和</text>
-    <text x="848" y="234">文</text>
-    <text x="848" y="302">組</text>
-    <text x="848" y="370">版</text>
-  </g>
+  <!-- 右ペイン: 縦書きプレビュー（実際の writing-mode で組版＝「ー」も正しく縦棒になる） -->
+  <foreignObject x="1018" y="120" width="84" height="400">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="writing-mode:vertical-rl;text-orientation:mixed;text-align:center;font-family:'Hiragino Mincho ProN','Yu Mincho','YuMincho',serif;font-size:64px;line-height:1.18;color:#1f1f1f;">縦書きで即</div>
+  </foreignObject>
+  <foreignObject x="908" y="120" width="84" height="400">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="writing-mode:vertical-rl;text-orientation:mixed;text-align:center;font-family:'Hiragino Mincho ProN','Yu Mincho','YuMincho',serif;font-size:64px;line-height:1.18;color:#1f1f1f;">プレビュー</div>
+  </foreignObject>
+  <foreignObject x="812" y="128" width="74" height="344">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="writing-mode:vertical-rl;text-orientation:mixed;text-align:center;font-family:'Hiragino Mincho ProN','Yu Mincho','YuMincho',serif;font-size:56px;line-height:1.2;color:#5a5a5a;">和文組版</div>
+  </foreignObject>
 
   <!-- 左下: ブランド + コピー -->
   <g>

@@ -48,8 +48,10 @@ function buildShellHtml(
   <title>TATEmd プレビュー</title>
   <link rel="stylesheet" href="${cssUri}" />
   <style>
-    html, body { height: 100%; margin: 0; padding: 0; background: #faf9f7; }
-    .preview-pane { height: 100%; padding: 1rem; box-sizing: border-box; overflow: hidden; }
+    /* webview の既定文字色は VS Code テーマ依存（暗テーマだと薄い灰）。明色の紙背景に
+       対して薄く見えるため、背景と濃い墨色の文字色を明示してコントラストを確保する。 */
+    html, body { height: 100%; margin: 0; padding: 0; background: #faf9f7; color: #1a1a1a; }
+    .preview-pane { height: 100%; padding: 1rem; box-sizing: border-box; overflow: hidden; background: #faf9f7; color: #1a1a1a; }
     /* 縦書きでは width:auto だと .tategaki が内容幅まで広がり親に clip され、横スクロール
        できず本文が切れる（白く見える）。pane 幅に拘束すると vertical.css の overflow-x:auto
        が効き、先頭(右)から横スクロールで読める。 */

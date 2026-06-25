@@ -2,7 +2,7 @@
   "name": "tatemd-vscode",
   "displayName": "TATEmd — 縦書き Markdown プレビュー",
   "description": "Markdown を縦書きでプレビューし、絵巻 PDF（横長1枚）として書き出す VSCode 拡張",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "torifonium",
   "license": "MIT",
   "author": "torifonium",
@@ -40,13 +40,13 @@
         "command": "tatemd.openPreview",
         "title": "縦書きプレビューを開く",
         "category": "TATEmd",
-        "icon": "$(open-preview)"
+        "icon": "$(book)"
       },
       {
         "command": "tatemd.exportEmaki",
         "title": "絵巻 PDF を書き出す（横長1枚）",
         "category": "TATEmd",
-        "icon": "$(book)"
+        "icon": "$(file-pdf)"
       }
     ],
     "menus": {
