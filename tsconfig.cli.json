@@ -1,6 +1,9 @@
 {
-  // CLI（tools/*.mjs）から再利用するため core を Node 向け JS に emit する設定。
+  // CLI（tools/*.mjs）からの再利用に加え、ライブラリ公開エントリ（src/index.ts）を
+  // Node/ブラウザ両対応の ESM ＋ 型定義(.d.ts)として emit する設定。
   // 依存追加なし（既存 typescript の tsc を使う）。出力は dist-cli/（Git 管理外）。
+  // include は公開バレル起点。import グラフ（core/* と styles/verticalCss）が
+  // 自動で同梱コンパイルされ、dist-cli/core/markdown.js も従来どおり emit される。
   "compilerOptions": {
     "target": "ES2020",
     "module": "NodeNext",
@@ -9,11 +12,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "strict": true,
-    "declaration": false,
+    "declaration": true,
     "noEmit": false,
     "outDir": "dist-cli",
     "rootDir": "src",
     "types": ["node"]
   },
-  "include": ["src/core/markdown.ts"]
+  "include": ["src/index.ts"],
+  "exclude": ["**/*.test.ts"]
 }
