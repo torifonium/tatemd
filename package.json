@@ -34,6 +34,10 @@
       "types": "./dist-cli/index.d.ts",
       "import": "./dist-cli/index.js"
     },
+    "./print": {
+      "types": "./dist-cli/print/index.d.ts",
+      "import": "./dist-cli/print/index.js"
+    },
     "./styles/vertical.css": "./src/styles/vertical.css",
     "./package.json": "./package.json"
   },
@@ -59,6 +63,14 @@
   },
   "dependencies": {
     "markdown-it": "^14.1.0"
+  },
+  "peerDependencies": {
+    "@vivliostyle/core": "^2.43.3"
+  },
+  "peerDependenciesMeta": {
+    "@vivliostyle/core": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
