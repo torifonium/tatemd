@@ -2,13 +2,15 @@
   // CLI（tools/*.mjs）からの再利用に加え、ライブラリ公開エントリ（src/index.ts）を
   // Node/ブラウザ両対応の ESM ＋ 型定義(.d.ts)として emit する設定。
   // 依存追加なし（既存 typescript の tsc を使う）。出力は dist-cli/（Git 管理外）。
-  // include は公開バレル起点。import グラフ（core/* と styles/verticalCss）が
-  // 自動で同梱コンパイルされ、dist-cli/core/markdown.js も従来どおり emit される。
+  // include は公開バレル＋print サブ export 起点。import グラフ（core/* と
+  // styles/verticalCss）が自動で同梱コンパイルされ、dist-cli/core/markdown.js も
+  // 従来どおり emit される。print は @vivliostyle/core と DOM を使うため lib に DOM を
+  // 足す（コア側の emit には影響しない＝コア利用者に DOM/Vivliostyle は混ざらない）。
   "compilerOptions": {
     "target": "ES2020",
     "module": "NodeNext",
     "moduleResolution": "nodenext",
-    "lib": ["ES2020"],
+    "lib": ["ES2020", "DOM"],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "strict": true,
@@ -18,6 +20,6 @@
     "rootDir": "src",
     "types": ["node"]
   },
-  "include": ["src/index.ts"],
+  "include": ["src/index.ts", "src/print/index.ts"],
   "exclude": ["**/*.test.ts"]
 }
