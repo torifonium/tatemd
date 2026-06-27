@@ -1,0 +1,52 @@
+name: Publish to npm
+
+# `v*` タグ push で npm に publish する。
+#
+# 認証は npm Trusted Publishing（GitHub OIDC）を使うため **トークン不要**。
+# provenance（来歴の Sigstore 署名）も自動付与される。
+#
+# 事前準備（メンテナが一度だけ・npmjs.com 側）:
+#   パッケージ `tatemd` の Settings → Trusted Publisher で GitHub Actions を登録
+#     - Organization / user: torifonium
+#     - Repository: tatemd
+#     - Workflow filename: publish-npm.yml
+#
+# 公開手順:
+#   1. package.json の version を上げてコミット
+#   2. `git tag vX.Y.Z && git push origin vX.Y.Z`
+#   3. 本ワークフローが test → publish を実行
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # Trusted Publishing / provenance（OIDC）に必須
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+
+      # Trusted Publishing は npm >= 11.5.1 が必要（Node 22 同梱は 10.x）
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      # Trusted Publishing 有効時はトークン不要・provenance 自動付与
+      - name: Publish
+        run: npm publish --access public
