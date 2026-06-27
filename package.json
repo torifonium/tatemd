@@ -1,6 +1,6 @@
 {
   "name": "tatemd",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Vertical-writing (tategaki) Markdown previewer & faithful PDF exporter (emaki / book)",
   "license": "MIT",
