@@ -31,21 +31,25 @@
   },
   "exports": {
     ".": {
-      "import": "./dist-cli/core/markdown.js"
+      "types": "./dist-cli/index.d.ts",
+      "import": "./dist-cli/index.js"
     },
+    "./styles/vertical.css": "./src/styles/vertical.css",
     "./package.json": "./package.json"
   },
   "files": [
     "bin/",
     "tools/",
     "dist-cli/",
+    "src/styles/vertical.css",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "build:cli": "tsc -p tsconfig.cli.json",
+    "gen:css": "node tools/gen-vertical-css.mjs",
+    "build:cli": "npm run gen:css && tsc -p tsconfig.cli.json",
     "preview": "vite preview",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
